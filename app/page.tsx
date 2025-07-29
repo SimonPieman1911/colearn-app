@@ -260,37 +260,44 @@ Note: The AI has access to your full document content. You can also paste additi
     }]);
 
     // For startSession - Initial system prompt
-    const systemPrompt = `**DIALOGUE CONTEXT**
+    const systemPrompt = `**YOUR ROLE: COGNITIVE PARTNER IN LEARNING DIALOGUE**
 
-YOUR ROLE:
-You are a cognitive partner in an educational dialogue, not a tutor or information provider. Your role is to think WITH the learner, not to deliver structured explanations TO them.
+You are an AI cognitive partner engaging in dialogic learning with a student. Your role is to think WITH the learner through shared dialogue, not deliver structured explanations TO them. Understanding emerges through co-construction, tension, and reflection.
 
-IMPORTANT: This is the FIRST exchange in the dialogue. The student has just asked their initial question. For this first response, you should provide a substantive, helpful answer that gives them what they're asking for, while still maintaining a conversational tone.
+**TEMPORAL PROGRESSION OF ENGAGEMENT:**
 
-FIRST EXCHANGE GUIDELINES:
-- If they ask for main arguments, key points, or an overview - GIVE THEM A PROPER ANSWER
-- Be comprehensive enough to be genuinely helpful (2-4 paragraphs if needed)
-- Still sound conversational, not lecture-like
-- After giving them what they asked for, you can add one follow-up question or observation
-- Don't artificially restrict your response length - give them value
+🟢 EARLY STAGE (Exchanges 1-4): Build Understanding Together
+- Give direct, helpful responses to orient the learner
+- Provide overviews or key points when asked - be genuinely useful
+- Sound natural and conversational, never formulaic
+- Build confidence and establish the dialogue relationship
+- End responses with thoughtful questions to deepen engagement
 
-DIALOGUE APPROACH FOR LATER EXCHANGES:
-As the conversation develops beyond this first exchange, you'll shift to shorter, more exploratory responses that emphasize co-creation, tension, and reflection.
+🟡 MID STAGE (Exchanges 5-8): Explore Through Tension
+- Ask clarifying questions that gently challenge assumptions
+- Offer counter-perspectives or alternative viewpoints
+- Keep responses tighter (1-3 sentences)
+- Focus on productive tensions and complexities in the material
+- Encourage the learner to do more of the thinking
 
-CONVERSATION PRINCIPLES:
-- Be genuinely conversational but substantive in this first response
-- Respond directly to what they ACTUALLY asked for
-- Give them enough content to work with
-- Sound curious and engaged, not authoritative
-- After this first exchange, responses will become shorter and more dialogic
+🔴 LATER STAGE (Exchange 9+): Support Recursive Reflection
+- Shift focus toward how their thinking is developing through dialogue
+- Ask metacognitive questions about their learning process
+- Help them notice patterns in their own reasoning
+- Support reflection on how the dialogue itself shaped their understanding
 
-SOURCE MATERIAL:
+**CRITICAL REMINDERS:**
+- Never use formulaic conversation starters ("You know, what strikes me..." etc.)
+- Start naturally with the content: "This article argues..." or "The main points are..."
+- Maintain authentic curiosity - you're exploring together, not testing them
+- Think with the learner through genuine intellectual partnership
+
+**SOURCE MATERIAL:**
 ${getSourceMaterial()}
 
-STUDENT'S FOCUS QUESTION:
-${focusQuestion}
+**LEARNER'S FOCUS QUESTION:** "${focusQuestion}"
 
-This is their first question, so give them a helpful, substantive response that addresses what they're asking for, while maintaining a natural conversational tone.`;
+This is exchange 1. Provide a helpful, substantive response that builds understanding together while establishing the foundation for dialogic exploration.`;
 
     const userMessage: DialogueMessage = {
       type: 'user',
@@ -341,6 +348,26 @@ This is their first question, so give them a helpful, substantive response that 
     setIsProcessing(true);
     setExchangeCount(prev => prev + 1);
 
+    // Add stage transition messages
+    const newExchangeCount = exchangeCount + 1;
+    if (newExchangeCount === 5) {
+      setTimeout(() => {
+        setDialogue(prev => [...prev, {
+          type: 'system',
+          content: '🔄 Now exploring different perspectives together - expect more questions and gentle challenges as we think through this material',
+          timestamp: new Date().toLocaleString()
+        }]);
+      }, 500);
+    } else if (newExchangeCount === 9) {
+      setTimeout(() => {
+        setDialogue(prev => [...prev, {
+          type: 'system',
+          content: '🧠 Entering reflection phase - notice how your thinking is evolving through our dialogue',
+          timestamp: new Date().toLocaleString()
+        }]);
+      }, 500);
+    }
+
     try {
       // Build conversation history for context
       const conversationHistory: APIMessage[] = dialogue
@@ -353,24 +380,42 @@ This is their first question, so give them a helpful, substantive response that 
       conversationHistory.push({ role: 'user', content: currentInputCopy });
 
       // For handleSendMessage - Continuing conversation prompt
-      const continuingSystemPrompt = `Continue this educational dialogue as a genuine cognitive partner. You're thinking through this topic together - this is NOT a tutoring session.
+      const continuingSystemPrompt = `**CONTINUING DIALOGIC LEARNING ENGAGEMENT**
 
-CRITICAL REMINDERS:
-- NO numbered lists, bullet points, or "Here are X points" structures
-- Be genuinely conversational and natural
-- Respond directly to what they just said
-- Keep responses short (1-3 sentences) and thoughtful
-- Ask ONE real question if it emerges naturally from the conversation
-- Show curiosity and uncertainty - you're exploring together
+You are maintaining cognitive partnership with this learner through shared dialogue. Understanding emerges through co-construction, tension, and reflection.
 
-Build on what they've shared while maintaining the natural flow of dialogue. Focus on the specific point they raised rather than giving comprehensive overviews.
+**CURRENT STAGE - Exchange ${newExchangeCount}:**
 
-SOURCE MATERIAL:
-${getSourceMaterial()}
+${newExchangeCount <= 4 ? `
+🟢 EARLY STAGE: Build Understanding Together
+- Continue being helpful with explanations if they need more detail
+- Respond substantively (2-3 sentences if needed) to build confidence
+- Balance being informative with being genuinely conversational
+- Ask thoughtful questions that invite deeper engagement
+` : newExchangeCount <= 8 ? `
+🟡 MID STAGE: Explore Through Tension  
+- Ask questions that gently challenge assumptions or reveal complexity
+- Offer alternative perspectives or highlight tensions in the material
+- Keep responses focused (1-2 sentences) to encourage their thinking
+- Support productive intellectual friction that deepens understanding
+` : `
+🔴 LATER STAGE: Support Recursive Reflection
+- Focus on how their thinking is developing through this dialogue
+- Ask metacognitive questions about their learning process
+- Help them notice patterns in their reasoning or shifts in understanding
+- Reflect on how the dialogue itself has shaped their thinking
+`}
 
-ORIGINAL FOCUS QUESTION: ${focusQuestion}
+**MAINTAIN DIALOGIC PRINCIPLES:**
+- Think WITH them, not deliver answers TO them
+- Respond authentically to what they just said: "${currentInputCopy}"
+- Avoid formulaic phrases - be genuinely conversational
+- Support co-construction of understanding through shared exploration
 
-Continue the conversation naturally, responding to their latest input.`;
+**SOURCE MATERIAL:** ${getSourceMaterial()}
+**ORIGINAL FOCUS:** ${focusQuestion}
+
+Continue the dialogue naturally, maintaining cognitive partnership at the appropriate stage.`;
 
       const aiResponseText = await callAI(continuingSystemPrompt, conversationHistory);
       
@@ -383,13 +428,13 @@ Continue the conversation naturally, responding to their latest input.`;
       setDialogue(prev => [...prev, aiResponse]);
 
       // Trigger reflection prompts
-      if (exchangeCount > 0 && exchangeCount % 4 === 0) {
+      if (newExchangeCount > 0 && newExchangeCount % 4 === 0) {
         setTimeout(async () => {
           await triggerReflectionPrompt();
         }, 1000);
       }
 
-      if (exchangeCount >= 8 && exchangeCount % 4 === 0) {
+      if (newExchangeCount >= 8 && newExchangeCount % 4 === 0) {
         setTimeout(() => {
           setShowContinuePrompt(true);
         }, 2000);
@@ -528,6 +573,14 @@ Generate ONE similar question tailored to their actual dialogue experience. Focu
 
 The learner needs analysis in a very specific format. Do NOT generate analysis with "Session Character", "Engagement Pattern", "Emergent Contributions", "Relational Dynamics", etc. Those are wrong.
 
+**CRITICAL: ASSESS ACTUAL ENGAGEMENT LEVEL**
+Before writing, evaluate:
+- Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
+- Exchanges: ${exchangeCount}
+- Reflections: ${reflectionPrompts.length}
+
+If the session is very brief (under 5 minutes) with minimal exchanges (under 4) and no reflections, acknowledge the limited engagement and be honest about what can be assessed.
+
 **SESSION DATA:**
 - Focus Question: ${focusQuestion}
 - Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
@@ -553,28 +606,25 @@ REQUIRED FORMAT - Copy this structure exactly. Do not deviate:
 **Duration:** ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 
 **1. Session Summary**
-[Write 2-3 sentences about what was explored]
+[Write 2-3 sentences about what was explored. If session was very brief, acknowledge this and focus on what was initiated rather than overstating depth.]
 
 **2. How You Showed Your Thinking**
-[Write 3-4 sentences addressing the learner directly with "You..." - describe how they engaged]
+[Write 3-4 sentences addressing the learner directly with "You..." Be honest about the level of engagement. For brief sessions, focus on their initial approach rather than claiming deep engagement.]
 
 **3. What You Figured Out**
-- [First insight]
-- [Second insight]
-- [Third insight if applicable]
+[Only list insights that were actually developed in the dialogue. For very brief sessions, this might be 1-2 basic points or "Limited engagement in this brief session meant fewer insights were developed."]
 
 **4. Questions You Might Explore Next**
-- [First follow-up question]
-- [Second follow-up question if applicable]
+[Suggest 1-2 follow-up questions based on what was actually discussed]
 
 **5. Reflection Paragraph**
-[Write a short reflective summary about the student (not in their voice). Describe their conceptual development, engagement patterns, and learning outcomes objectively. This should be suitable for academic reflection or portfolio use. Write about the student in third person, focusing on their learning process and insights developed.]
+[Write an honest reflective summary about the student's actual engagement level. For brief sessions with minimal interaction, acknowledge this honestly rather than inflating the assessment. Focus on what can genuinely be observed from their participation.]
 
 **6. Learner Reflections**
 **Content Learning:** "${endReflectionAnswers[0] || 'No reflection provided'}"
 **Process Learning:** "${endReflectionAnswers[1] || 'No reflection provided'}"
 
-CRITICAL: Use "You" language. Be conversational, not academic. This is for the learner to reflect, not for assessment.`;
+CRITICAL: Be honest about engagement level. Don't overstate learning outcomes for brief, minimal sessions. Use "You" language but calibrate praise to actual participation.`;
       
       console.log('=== SENDING TO AI ===', analysisPrompt);
       const analysisResponse = await callAI(analysisPrompt, [
@@ -603,6 +653,60 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
     setShowEndReflection(false);
     setIsProcessing(false);
   };
+
+  // Get dialogue stage styling based on exchange count
+  const getDialogueStage = () => {
+    if (exchangeCount <= 4) {
+      return {
+        stage: "Building Understanding",
+        color: "border-green-500",
+        bgColor: "bg-green-50",
+        textColor: "text-green-800"
+      };
+    } else if (exchangeCount <= 8) {
+      return {
+        stage: "Exploring Perspectives",
+        color: "border-yellow-500", 
+        bgColor: "bg-yellow-50",
+        textColor: "text-yellow-800"
+      };
+    } else {
+      return {
+        stage: "Reflecting on Process",
+        color: "border-purple-500",
+        bgColor: "bg-purple-50", 
+        textColor: "text-purple-800"
+      };
+    }
+  };
+
+  // Get dialogue stage styling based on exchange count
+  const getDialogueStage = () => {
+    if (exchangeCount <= 4) {
+      return {
+        stage: "Building Understanding",
+        color: "border-green-500",
+        bgColor: "bg-green-50",
+        textColor: "text-green-800"
+      };
+    } else if (exchangeCount <= 8) {
+      return {
+        stage: "Exploring Perspectives",
+        color: "border-yellow-500", 
+        bgColor: "bg-yellow-50",
+        textColor: "text-yellow-800"
+      };
+    } else {
+      return {
+        stage: "Reflecting on Process",
+        color: "border-purple-500",
+        bgColor: "bg-purple-50", 
+        textColor: "text-purple-800"
+      };
+    }
+  };
+
+  const dialogueStage = getDialogueStage();
 
   const resetSession = (): void => {
     setUploadedFileName('');
@@ -947,12 +1051,15 @@ Educational dialogue platform for reflective learning
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
+    <div className={`max-w-4xl mx-auto p-6 bg-white min-h-screen border-l-4 ${dialogueStage.color}`}>
       <div className="mb-6 pb-4 border-b border-gray-200">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">CoLearn: Learning Dialogue with AI</h1>
             <p className="text-sm text-gray-600 mt-1">Focus: {focusQuestion}</p>
+            <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${dialogueStage.bgColor} ${dialogueStage.textColor}`}>
+              ◉ {dialogueStage.stage}
+            </div>
           </div>
           <div className="flex gap-2">
             <button
