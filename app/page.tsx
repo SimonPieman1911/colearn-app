@@ -792,6 +792,16 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
             <li>• <strong>End Session:</strong> Lock when finished to get learning analysis</li>
           </ul>
         </div>
+
+        {/* About button for initial screen */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => setShowAboutModal(true)}
+            className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+          >
+            What Is CoLearn?
+          </button>
+        </div>
       </div>
     );
   }
@@ -854,6 +864,16 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
               className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
               {isProcessing ? 'Generating Analysis...' : 'Get Learning Analysis'}
+            </button>
+          </div>
+
+          {/* About button for reflection screen */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setShowAboutModal(true)}
+              className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+            >
+              What Is CoLearn?
             </button>
           </div>
         </div>
