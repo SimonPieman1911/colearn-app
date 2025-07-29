@@ -70,7 +70,7 @@ const scrollToBottom = () => {
   }, [dialogue]);
 
   // Call our backend API
-  const callAI = async (systemPrompt, messages) => {
+  const callAI = async (systemPrompt: string, messages: any[]) => {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
