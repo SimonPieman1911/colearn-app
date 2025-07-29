@@ -102,34 +102,6 @@ export default function CoLearnInterface() {
     scrollToBottom();
   }, [dialogue]);
 
-  // Get dialogue stage styling based on exchange count
-  const getDialogueStage = () => {
-    if (exchangeCount <= 4) {
-      return {
-        stage: "Building Understanding",
-        color: "border-green-500",
-        bgColor: "bg-green-50",
-        textColor: "text-green-800"
-      };
-    } else if (exchangeCount <= 8) {
-      return {
-        stage: "Exploring Perspectives",
-        color: "border-yellow-500", 
-        bgColor: "bg-yellow-50",
-        textColor: "text-yellow-800"
-      };
-    } else {
-      return {
-        stage: "Reflecting on Process",
-        color: "border-purple-500",
-        bgColor: "bg-purple-50", 
-        textColor: "text-purple-800"
-      };
-    }
-  };
-
-  const dialogueStage = getDialogueStage();
-
   // Call our backend API
   const callAI = async (systemPrompt: string, messages: APIMessage[]): Promise<string> => {
     try {
@@ -1025,14 +997,26 @@ Educational dialogue platform for reflective learning
   }
 
   return (
-    <div className={`max-w-4xl mx-auto p-6 bg-white min-h-screen border-l-4 ${dialogueStage.color}`}>
+    <div className={`max-w-4xl mx-auto p-6 bg-white min-h-screen ${
+      exchangeCount <= 4 ? 'border-l-4 border-green-500' :
+      exchangeCount <= 8 ? 'border-l-4 border-yellow-500' : 
+      'border-l-4 border-purple-500'
+    }`}>
       <div className="mb-6 pb-4 border-b border-gray-200">
         <div className="flex justify-between items-start">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">CoLearn: Learning Dialogue with AI</h1>
             <p className="text-sm text-gray-600 mt-1">Focus: {focusQuestion}</p>
-            <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${dialogueStage.bgColor} ${dialogueStage.textColor}`}>
-              ◉ {dialogueStage.stage}
+            <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
+              exchangeCount <= 4 ? 'bg-green-50 text-green-800' :
+              exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800' :
+              'bg-purple-50 text-purple-800'
+            }`}>
+              ◉ {
+                exchangeCount <= 4 ? 'Building Understanding' :
+                exchangeCount <= 8 ? 'Exploring Perspectives' :
+                'Reflecting on Process'
+              }
             </div>
           </div>
           <div className="flex gap-2">
