@@ -346,11 +346,21 @@ This is exchange 1. Provide a helpful, substantive response that builds understa
     const currentInputCopy = currentInput;
     setCurrentInput('');
     setIsProcessing(true);
-    setExchangeCount(prev => prev + 1);
+    
+    // Debug logging
+    console.log('Current exchange count before update:', exchangeCount);
+    setExchangeCount(prev => {
+      const newCount = prev + 1;
+      console.log('Setting exchange count to:', newCount);
+      return newCount;
+    });
 
     // Add stage transition messages
     const newExchangeCount = exchangeCount + 1;
+    console.log('New exchange count for transitions:', newExchangeCount);
+    
     if (newExchangeCount === 5) {
+      console.log('Should show transition message at exchange 5');
       setTimeout(() => {
         setDialogue(prev => [...prev, {
           type: 'system',
@@ -359,6 +369,7 @@ This is exchange 1. Provide a helpful, substantive response that builds understa
         }]);
       }, 500);
     } else if (newExchangeCount === 9) {
+      console.log('Should show transition message at exchange 9');
       setTimeout(() => {
         setDialogue(prev => [...prev, {
           type: 'system',
@@ -1007,6 +1018,7 @@ Educational dialogue platform for reflective learning
           <div>
             <h1 className="text-2xl font-bold text-gray-900">CoLearn: Learning Dialogue with AI</h1>
             <p className="text-sm text-gray-600 mt-1">Focus: {focusQuestion}</p>
+            <div className="text-xs text-gray-500 mb-2">Debug: Exchange Count = {exchangeCount}</div>
             <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
               exchangeCount <= 4 ? 'bg-green-50 text-green-800' :
               exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800' :
