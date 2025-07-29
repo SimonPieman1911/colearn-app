@@ -34,43 +34,76 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Pause, Lock, FileText, Brain, User, Bot, Clock, Upload } from 'lucide-react';
 
+// Type definitions
+interface DialogueMessage {
+  type: 'system' | 'user' | 'ai' | 'reflection' | 'analysis_request';
+  content: string;
+  timestamp?: string;
+  prompt?: string;
+}
+
+interface ReflectionPrompt {
+  type: 'reflection';
+  prompt: string;
+  content: string;
+  timestamp: string;
+}
+
+interface SessionDuration {
+  minutes: number;
+  seconds: number;
+}
+
+interface SessionAnalysis {
+  content: string;
+  studentReflections: {
+    contentLearning: string;
+    processLearning: string;
+  };
+}
+
+interface APIMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
 export default function CoLearnInterface() {
-  const [sessionActive, setSessionActive] = useState(false);
-  const [sessionLocked, setSessionLocked] = useState(false);
-  const [sourceText, setSourceText] = useState('');
-  const [focusQuestion, setFocusQuestion] = useState('');
-  const [dialogue, setDialogue] = useState([]);
-  const [currentInput, setCurrentInput] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [reflectionPrompts, setReflectionPrompts] = useState([]);
-  const [showReflectionModal, setShowReflectionModal] = useState(false);
-  const [currentReflection, setCurrentReflection] = useState('');
-  const [sessionAnalysis, setSessionAnalysis] = useState(null);
-  const [exchangeCount, setExchangeCount] = useState(0);
-  const [uploadedFileName, setUploadedFileName] = useState('');
-  const [showContinuePrompt, setShowContinuePrompt] = useState(false);
-  const [showEndReflection, setShowEndReflection] = useState(false);
-  const [endReflectionAnswers, setEndReflectionAnswers] = useState(['', '']);
-  const [generatedProcessQuestion, setGeneratedProcessQuestion] = useState('');
-  const [sessionStartTime, setSessionStartTime] = useState(null);
-  const [sessionDuration, setSessionDuration] = useState(null);
-  const [reflectionInput, setReflectionInput] = useState('');
-  const [hiddenDocumentContent, setHiddenDocumentContent] = useState('');
-  const [documentUploaded, setDocumentUploaded] = useState(false);
+  const [sessionActive, setSessionActive] = useState<boolean>(false);
+  const [sessionLocked, setSessionLocked] = useState<boolean>(false);
+  const [sourceText, setSourceText] = useState<string>('');
+  const [focusQuestion, setFocusQuestion] = useState<string>('');
+  const [dialogue, setDialogue] = useState<DialogueMessage[]>([]);
+  const [currentInput, setCurrentInput] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [reflectionPrompts, setReflectionPrompts] = useState<ReflectionPrompt[]>([]);
+  const [showReflectionModal, setShowReflectionModal] = useState<boolean>(false);
+  const [currentReflection, setCurrentReflection] = useState<string>('');
+  const [sessionAnalysis, setSessionAnalysis] = useState<SessionAnalysis | null>(null);
+  const [exchangeCount, setExchangeCount] = useState<number>(0);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
+  const [showContinuePrompt, setShowContinuePrompt] = useState<boolean>(false);
+  const [showEndReflection, setShowEndReflection] = useState<boolean>(false);
+  const [endReflectionAnswers, setEndReflectionAnswers] = useState<string[]>(['', '']);
+  const [generatedProcessQuestion, setGeneratedProcessQuestion] = useState<string>('');
+  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  const [sessionDuration, setSessionDuration] = useState<SessionDuration | null>(null);
+  const [reflectionInput, setReflectionInput] = useState<string>('');
+  const [hiddenDocumentContent, setHiddenDocumentContent] = useState<string>('');
+  const [documentUploaded, setDocumentUploaded] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-const scrollToBottom = () => {
-  if (messagesEndRef.current) {
-    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-  }
-};
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     scrollToBottom();
   }, [dialogue]);
 
   // Call our backend API
-  const callAI = async (systemPrompt: string, messages: any[]) => {
+  const callAI = async (systemPrompt: string, messages: APIMessage[]): Promise<string> => {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -94,7 +127,7 @@ const scrollToBottom = () => {
   };
 
   // Get source material for AI (combines visible text and hidden document content)
-  const getSourceMaterial = () => {
+  const getSourceMaterial = (): string => {
     const visibleText = sourceText.trim();
     const hiddenText = hiddenDocumentContent.trim();
     
@@ -111,23 +144,23 @@ const scrollToBottom = () => {
   };
 
   // Load PDF.js library dynamically
-const loadPDFJS = async () => {
-  if ((window as any).pdfjsLib) return;
-  
-  return new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-    script.onload = () => {
-      (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-      resolve(undefined);
-    };
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
-};
+  const loadPDFJS = async (): Promise<void> => {
+    if ((window as any).pdfjsLib) return;
+    
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      script.onload = () => {
+        (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        resolve();
+      };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     setUploadedFileName(file.name);
@@ -157,7 +190,7 @@ const loadPDFJS = async () => {
           for (let i = 1; i <= pdf.numPages; i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
+            const pageText = textContent.items.map((item: any) => item.str).join(' ');
             fullText += pageText + '\n\n';
           }
           
@@ -170,8 +203,8 @@ const loadPDFJS = async () => {
       } else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
         // Handle Word documents
         try {
-          if (window.mammoth) {
-            const result = await window.mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()});
+          if ((window as any).mammoth) {
+            const result = await (window as any).mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()});
             extractedContent = result.value;
           } else {
             extractedContent = `[Word Document: ${file.name} - Content extraction not available. Please copy and paste the text manually if needed.]`;
@@ -206,14 +239,14 @@ Note: The AI has access to your full document content. You can also paste additi
     }
   };
 
-  const removeFile = () => {
+  const removeFile = (): void => {
     setUploadedFileName('');
     setHiddenDocumentContent('');
     setDocumentUploaded(false);
     setSourceText('');
   };
 
-  const startSession = async () => {
+  const startSession = async (): Promise<void> => {
     if ((!sourceText.trim() && !hiddenDocumentContent.trim()) || !focusQuestion.trim()) {
       alert('Please provide source material and your main question to begin.');
       return;
@@ -273,7 +306,7 @@ ${focusQuestion}
 
 Respond naturally to their question as if you're genuinely curious about this topic too. Avoid any structured or formulaic approach.`;
 
-    const userMessage = {
+    const userMessage: DialogueMessage = {
       type: 'user',
       content: focusQuestion,
       timestamp: new Date().toLocaleString()
@@ -288,7 +321,7 @@ Respond naturally to their question as if you're genuinely curious about this to
         { role: 'user', content: focusQuestion }
       ]);
       
-      const aiResponse = {
+      const aiResponse: DialogueMessage = {
         type: 'ai',
         content: aiResponseText,
         timestamp: new Date().toLocaleString()
@@ -307,10 +340,10 @@ Respond naturally to their question as if you're genuinely curious about this to
     setIsProcessing(false);
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (): Promise<void> => {
     if (!currentInput.trim() || isProcessing || sessionLocked) return;
 
-    const userMessage = {
+    const userMessage: DialogueMessage = {
       type: 'user',
       content: currentInput,
       timestamp: new Date().toLocaleString()
@@ -324,7 +357,7 @@ Respond naturally to their question as if you're genuinely curious about this to
 
     try {
       // Build conversation history for context
-      const conversationHistory = dialogue
+      const conversationHistory: APIMessage[] = dialogue
         .filter(msg => msg.type === 'user' || msg.type === 'ai')
         .map(msg => ({
           role: msg.type === 'user' ? 'user' : 'assistant',
@@ -355,7 +388,7 @@ Continue the conversation naturally, responding to their latest input.`;
 
       const aiResponseText = await callAI(continuingSystemPrompt, conversationHistory);
       
-      const aiResponse = {
+      const aiResponse: DialogueMessage = {
         type: 'ai',
         content: aiResponseText,
         timestamp: new Date().toLocaleString()
@@ -388,7 +421,7 @@ Continue the conversation naturally, responding to their latest input.`;
     setIsProcessing(false);
   };
 
-  const triggerReflectionPrompt = async () => {
+  const triggerReflectionPrompt = async (): Promise<void> => {
     // Generate contextual reflection prompt based on recent dialogue
     try {
       const recentDialogue = dialogue.slice(-4).filter(msg => msg.type === 'user' || msg.type === 'ai');
@@ -423,27 +456,27 @@ Make it specific to their recent engagement. Return only the question.`;
     setShowReflectionModal(true);
   };
 
-  const submitReflection = (reflectionText) => {
-    const reflection = {
+  const submitReflection = (reflectionText: string): void => {
+    const reflection: DialogueMessage = {
       type: 'reflection',
       prompt: currentReflection,
       content: reflectionText,
       timestamp: new Date().toLocaleString()
     };
     
-    setReflectionPrompts(prev => [...prev, reflection]);
+    setReflectionPrompts(prev => [...prev, reflection as ReflectionPrompt]);
     setDialogue(prev => [...prev, reflection]);
     setShowReflectionModal(false);
     setCurrentReflection('');
     setReflectionInput('');
   };
 
-  const lockSession = async () => {
+  const lockSession = async (): Promise<void> => {
     setSessionLocked(true);
     
     if (sessionStartTime) {
       const endTime = new Date();
-      const durationMs = endTime - sessionStartTime;
+      const durationMs = endTime.getTime() - sessionStartTime.getTime();
       const minutes = Math.floor(durationMs / 60000);
       const seconds = Math.floor((durationMs % 60000) / 1000);
       setSessionDuration({ minutes, seconds });
@@ -500,7 +533,7 @@ Generate ONE similar question tailored to their actual dialogue experience. Focu
     setShowEndReflection(true);
   };
 
-  const handleEndReflectionSubmit = async () => {
+  const handleEndReflectionSubmit = async (): Promise<void> => {
     console.log('=== ANALYSIS FUNCTION STARTED ===');
     setIsProcessing(true);
 
@@ -585,7 +618,7 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
     setIsProcessing(false);
   };
 
-  const resetSession = () => {
+  const resetSession = (): void => {
     setUploadedFileName('');
     setHiddenDocumentContent('');
     setDocumentUploaded(false);
@@ -611,16 +644,16 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
     return (
       <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
         <div className="mb-8">
-  <div className="flex items-center gap-4 mb-2">
-    <img 
-      src="/Co-Learn Logo.png" 
-      alt="CoLearn Logo" 
-      className="h-12 w-auto"
-    />
-    <h1 className="text-3xl font-bold text-gray-900">CoLearn: Human + AI, in dialogue</h1>
-  </div>
-  <p className="text-gray-600">Have a guided learning conversation with AI about any material you're studying</p>
-</div>
+          <div className="flex items-center gap-4 mb-2">
+            <img 
+              src="/Co-Learn Logo.png" 
+              alt="CoLearn Logo" 
+              className="h-12 w-auto"
+            />
+            <h1 className="text-3xl font-bold text-gray-900">CoLearn: Human + AI, in dialogue</h1>
+          </div>
+          <p className="text-gray-600">Have a guided learning conversation with AI about any material you're studying</p>
+        </div>
 
         <div className="space-y-6">
           <div>
@@ -662,7 +695,7 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
             
             <textarea
               value={sourceText}
-              onChange={(e) => setSourceText(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSourceText(e.target.value)}
               placeholder="Paste your text, article, notes, or any material you want to learn about here... (Or upload PDF, Word, or text files above)"
               className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             />
@@ -676,7 +709,7 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
             <input
               type="text"
               value={focusQuestion}
-              onChange={(e) => setFocusQuestion(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFocusQuestion(e.target.value)}
               placeholder="What do you want to explore or understand better about this material?"
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             />
@@ -723,14 +756,14 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
             <p className="text-blue-800 mb-3">What did you learn or understand differently about your material through this conversation?</p>
             <textarea
               value={endReflectionAnswers[0]}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                 const newAnswers = [...endReflectionAnswers];
                 newAnswers[0] = e.target.value;
                 setEndReflectionAnswers(newAnswers);
               }}
               placeholder="Your reflection on what you learned about the content..."
               className="w-full h-32 p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              rows="4"
+              rows={4}
             />
           </div>
 
@@ -739,20 +772,20 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
             <p className="text-green-800 mb-3">{generatedProcessQuestion}</p>
             <textarea
               value={endReflectionAnswers[1]}
-              onChange={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
                 const newAnswers = [...endReflectionAnswers];
                 newAnswers[1] = e.target.value;
                 setEndReflectionAnswers(newAnswers);
               }}
               placeholder="Your reflection on the learning process..."
               className="w-full h-32 p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              rows="4"
+              rows={4}
             />
           </div>
 
           <div className="flex gap-4">
             <button
-              onClick={() => {
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 setShowEndReflection(false);
                 setEndReflectionAnswers(['', '']);
                 handleEndReflectionSubmit();
@@ -800,74 +833,72 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
           </div>
 
           {/* Parse analysis into colored sections */}
-        
-// Replace the analysis parsing section in the sessionAnalysis display
-{(() => {
-  const content = sessionAnalysis.content;
-  const sections = content.split(/\*\*(\d+\. [^*]+)\*\*/);
-  const results = [];
-  
-  // Handle the title and duration first
-  const titleMatch = content.match(/\*\*(CoLearn: Session Analysis)\*\*/);
-  const subtitleMatch = content.match(/\*(Learning insights from your dialogue session)\*/);
-  const durationMatch = content.match(/\*\*Duration:\*\* (.+?)(?=\*\*|$)/);
-  
-  if (titleMatch && subtitleMatch && durationMatch) {
-    results.push(
-      <div key="header" className="bg-indigo-50 p-4 rounded-lg">
-        <h3 className="font-bold text-indigo-900 text-lg mb-1">{titleMatch[1]}</h3>
-        <p className="text-indigo-700 italic text-sm mb-2">{subtitleMatch[1]}</p>
-        <p className="text-indigo-800 font-medium">Duration: {durationMatch[1]}</p>
-      </div>
-    );
-  }
-  
-  // Process numbered sections
-  for (let i = 1; i < sections.length; i += 2) {
-    const title = sections[i];
-    let content = sections[i + 1];
-    
-    if (title && content) {
-      let bgColor = 'bg-blue-50';
-      let textColor = 'text-blue-900';
-      let contentColor = 'text-blue-800';
-      
-      if (title.includes('Session Summary')) {
-        bgColor = 'bg-green-50'; textColor = 'text-green-900'; contentColor = 'text-green-800';
-      } else if (title.includes('How You Showed')) {
-        bgColor = 'bg-purple-50'; textColor = 'text-purple-900'; contentColor = 'text-purple-800';
-      } else if (title.includes('What You Figured')) {
-        bgColor = 'bg-orange-50'; textColor = 'text-orange-900'; contentColor = 'text-orange-800';
-      } else if (title.includes('Questions You Might')) {
-        bgColor = 'bg-yellow-50'; textColor = 'text-yellow-900'; contentColor = 'text-yellow-800';
-      } else if (title.includes('Reflection Paragraph')) {
-        bgColor = 'bg-pink-50'; textColor = 'text-pink-900'; contentColor = 'text-pink-800';
-      } else if (title.includes('Learner Reflections')) {
-        bgColor = 'bg-gray-50'; textColor = 'text-gray-900'; contentColor = 'text-gray-800';
-        
-        // Special handling for Learner Reflections section to format the bold text
-        content = content.replace(/\*\*(Content Learning:)\*\*/g, '<strong>$1</strong>');
-        content = content.replace(/\*\*(Process Learning:)\*\*/g, '<strong>$1</strong>');
-      }
-      
-      results.push(
-        <div key={i} className={`${bgColor} p-4 rounded-lg`}>
-          <h3 className={`font-bold ${textColor} mb-3`}>{title}</h3>
-          <div 
-            className={`${contentColor} whitespace-pre-wrap`}
-            dangerouslySetInnerHTML={{__html: content.trim()}}
-          />
-        </div>
-      );
-    }
-  }
-  
-  return results;
-})()}
+          {(() => {
+            const content = sessionAnalysis.content;
+            const sections = content.split(/\*\*(\d+\. [^*]+)\*\*/);
+            const results: JSX.Element[] = [];
+            
+            // Handle the title and duration first
+            const titleMatch = content.match(/\*\*(CoLearn: Session Analysis)\*\*/);
+            const subtitleMatch = content.match(/\*(Learning insights from your dialogue session)\*/);
+            const durationMatch = content.match(/\*\*Duration:\*\* (.+?)(?=\*\*|$)/);
+            
+            if (titleMatch && subtitleMatch && durationMatch) {
+              results.push(
+                <div key="header" className="bg-indigo-50 p-4 rounded-lg">
+                  <h3 className="font-bold text-indigo-900 text-lg mb-1">{titleMatch[1]}</h3>
+                  <p className="text-indigo-700 italic text-sm mb-2">{subtitleMatch[1]}</p>
+                  <p className="text-indigo-800 font-medium">Duration: {durationMatch[1]}</p>
+                </div>
+              );
+            }
+            
+            // Process numbered sections
+            for (let i = 1; i < sections.length; i += 2) {
+              const title = sections[i];
+              let content = sections[i + 1];
+              
+              if (title && content) {
+                let bgColor = 'bg-blue-50';
+                let textColor = 'text-blue-900';
+                let contentColor = 'text-blue-800';
+                
+                if (title.includes('Session Summary')) {
+                  bgColor = 'bg-green-50'; textColor = 'text-green-900'; contentColor = 'text-green-800';
+                } else if (title.includes('How You Showed')) {
+                  bgColor = 'bg-purple-50'; textColor = 'text-purple-900'; contentColor = 'text-purple-800';
+                } else if (title.includes('What You Figured')) {
+                  bgColor = 'bg-orange-50'; textColor = 'text-orange-900'; contentColor = 'text-orange-800';
+                } else if (title.includes('Questions You Might')) {
+                  bgColor = 'bg-yellow-50'; textColor = 'text-yellow-900'; contentColor = 'text-yellow-800';
+                } else if (title.includes('Reflection Paragraph')) {
+                  bgColor = 'bg-pink-50'; textColor = 'text-pink-900'; contentColor = 'text-pink-800';
+                } else if (title.includes('Learner Reflections')) {
+                  bgColor = 'bg-gray-50'; textColor = 'text-gray-900'; contentColor = 'text-gray-800';
+                  
+                  // Special handling for Learner Reflections section to format the bold text
+                  content = content.replace(/\*\*(Content Learning:)\*\*/g, '<strong>$1</strong>');
+                  content = content.replace(/\*\*(Process Learning:)\*\*/g, '<strong>$1</strong>');
+                }
+                
+                results.push(
+                  <div key={i} className={`${bgColor} p-4 rounded-lg`}>
+                    <h3 className={`font-bold ${textColor} mb-3`}>{title}</h3>
+                    <div 
+                      className={`${contentColor} whitespace-pre-wrap`}
+                      dangerouslySetInnerHTML={{__html: content.trim()}}
+                    />
+                  </div>
+                );
+              }
+            }
+            
+            return results;
+          })()}
 
           <div className="flex gap-4">
             <button
-              onClick={() => {
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 const analysisData = {
                   sessionOverview: {
                     focusQuestion: focusQuestion,
@@ -917,7 +948,7 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => {
+              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                 if (confirm('Are you sure you want to restart? This will clear your current dialogue and start fresh.')) {
                   resetSession();
                 }
@@ -1049,8 +1080,8 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
           <div className="flex gap-3">
             <textarea
               value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCurrentInput(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleSendMessage();
@@ -1058,7 +1089,7 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
               }}
               placeholder="Continue your dialogue with AI... (Shift+Enter for new line, Enter to send)"
               className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
-              rows="3"
+              rows={3}
               disabled={isProcessing}
             />
             <button
@@ -1081,12 +1112,12 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
               value={reflectionInput}
               placeholder="Your reflection..."
               className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-gray-900 resize-none"
-              onChange={(e) => setReflectionInput(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReflectionInput(e.target.value)}
               autoFocus
             />
             <div className="flex gap-3">
               <button
-                onClick={() => {
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   setShowReflectionModal(false);
                   setReflectionInput('');
                 }}
