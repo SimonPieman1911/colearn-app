@@ -90,6 +90,7 @@ export default function CoLearnInterface() {
   const [reflectionInput, setReflectionInput] = useState<string>('');
   const [hiddenDocumentContent, setHiddenDocumentContent] = useState<string>('');
   const [documentUploaded, setDocumentUploaded] = useState<boolean>(false);
+  const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -594,6 +595,9 @@ Before writing, evaluate:
 
 If the session is very brief (under 5 minutes) with minimal exchanges (under 4) and no reflections, acknowledge the limited engagement and be honest about what can be assessed.
 
+**REFLECTION INTEGRATION:**
+If the learner engaged in reflections during the dialogue, weave insights from these into your analysis where relevant. Reflections can show thinking evolution, but don't over-emphasize them - maintain focus on the overall dialogue quality and learning progression.
+
 **SESSION DATA:**
 - Focus Question: ${focusQuestion}
 - Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
@@ -620,25 +624,25 @@ REQUIRED FORMAT - Copy this structure exactly. Do not deviate:
 **Duration:** ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 
 **1. Session Summary**
-[Write 2-3 sentences about what was explored. Include mention of which dialogue phase(s) were reached. If session was very brief, acknowledge this and focus on what was initiated rather than overstating depth.]
+[Write 2-3 sentences about what was explored. Include mention of which dialogue phase(s) were reached and note the quality/number of reflections if significant. If session was very brief, acknowledge this and focus on what was initiated rather than overstating depth.]
 
 **2. How You Showed Your Thinking**
-[Write 3-4 sentences addressing the learner directly with "You..." Be honest about the level of engagement. Include a brief quote from their dialogue that shows their thinking. For brief sessions, focus on their initial approach rather than claiming deep engagement.]
+[Write 3-4 sentences addressing the learner directly with "You..." Be honest about the level of engagement. Include a brief quote from their dialogue OR a reflection that shows their thinking evolution. Mention how their reflections revealed their thought process. For brief sessions, focus on their initial approach rather than claiming deep engagement.]
 
 **3. What You Figured Out**
-[Only list insights that were actually developed in the dialogue. For very brief sessions, this might be 1-2 basic points or "Limited engagement in this brief session meant fewer insights were developed."]
+[List insights that were actually developed in the dialogue. If there were meaningful reflections, show how insights evolved between reflection points. Include brief quotes from reflections if they capture key realizations. For very brief sessions, this might be 1-2 basic points or "Limited engagement in this brief session meant fewer insights were developed."]
 
 **4. Ideas You Could Explore Further**
-[Suggest 1-2 follow-up questions based on what was actually discussed. Use warm, inviting language rather than assignment-like directives.]
+[Suggest 1-2 follow-up questions based on what was actually discussed, including themes that emerged in their reflections. Use warm, inviting language rather than assignment-like directives.]
 
 **5. Reflection Summary**
-[Write an honest, warm summary about the student's engagement and learning process. Reference the dialogue phases if relevant. For brief sessions with minimal interaction, acknowledge this honestly rather than inflating the assessment. Focus on what can genuinely be observed from their participation. Write in third person about the student.]
+[Write an honest, warm summary about the student's engagement and learning process. If they engaged in reflections, highlight how these showed their metacognitive awareness and thinking evolution. Reference the dialogue phases if relevant. Connect their reflection insights to their overall learning journey. For brief sessions with minimal interaction, acknowledge this honestly rather than inflating the assessment. Focus on what can genuinely be observed from their participation. Write in third person about the student.]
 
 **6. Learner Reflections**
 **Content Learning:** "${endReflectionAnswers[0] || 'No reflection provided'}"
 **Process Learning:** "${endReflectionAnswers[1] || 'No reflection provided'}"
 
-CRITICAL: Be honest about engagement level. Use warm, supportive language that's grounded rather than overly positive. Don't overstate learning outcomes for brief, minimal sessions. Reference the dialogue phases (Ground/Stretch/Deepen) when relevant.`;
+CRITICAL: Be honest about engagement level. Use warm, supportive language that's grounded rather than overly positive. Don't overstate learning outcomes for brief, minimal sessions. Reference the dialogue phases (Ground/Stretch/Deepen) when relevant. Give special attention to how reflections revealed thinking patterns and learning evolution.`;
       
       console.log('=== SENDING TO AI ===', analysisPrompt);
       const analysisResponse = await callAI(analysisPrompt, [
@@ -1204,6 +1208,16 @@ Educational dialogue platform for reflective learning
               <Send className="w-4 h-4" />
             </button>
           </div>
+          
+          {/* About button */}
+          <div className="mt-4 text-center">
+            <button
+              onClick={() => setShowAboutModal(true)}
+              className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+            >
+              What Is CoLearn?
+            </button>
+          </div>
         </div>
       )}
 
@@ -1234,6 +1248,64 @@ Educational dialogue platform for reflective learning
                 className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showAboutModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
+          <div className="bg-white p-8 rounded-lg max-w-2xl w-full mx-4 shadow-2xl border border-gray-200 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">About CoLearn: Human + AI, in Dialogue</h2>
+              <button
+                onClick={() => setShowAboutModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="space-y-4 text-gray-700 leading-relaxed">
+              <p>
+                <strong>CoLearn</strong> is an experimental educational dialogue system designed to support reflective learning through conversation with AI. Rooted in dialogic and posthuman theories of learning — and particularly inspired by <strong>Owen Matson's</strong> concept of the <em>cognitive intraface</em> — CoLearn invites learners to treat understanding not as something received, but as something <strong>co-constructed through interaction</strong>.
+              </p>
+              
+              <p>
+                Rather than positioning AI as a tutor or content expert, CoLearn frames it as a <strong>cognitive partner</strong> — a system with which meaning can be made, questioned, and reshaped. It operates on the belief that cognition is distributed across human and machine, and that deep learning emerges not from answers, but from <strong>friction, surprise, and recursive reflection</strong>.
+              </p>
+              
+              <div>
+                <p className="mb-2">The dialogue moves through three phases:</p>
+                <ul className="list-disc ml-6 space-y-1">
+                  <li><strong>Ground</strong>: Orient to the material. Ask clarifying questions. Build a shared foundation.</li>
+                  <li><strong>Stretch</strong>: Explore tensions, challenge assumptions, and introduce complexity.</li>
+                  <li><strong>Deepen</strong>: Reflect on your own learning process. Surface shifts in understanding and perspective.</li>
+                </ul>
+              </div>
+              
+              <p>
+                CoLearn deliberately resists the smooth delivery model typical of many AI tools. It is designed to <strong>slow things down</strong>, to reveal the process of thinking as it happens, and to make space for learners to engage critically with both their material and the medium itself.
+              </p>
+              
+              <p>
+                This app is part of an ongoing exploration of what it means to learn <strong>with</strong> AI — not simply from it. It is a prototype, a provocation, and an invitation to take dialogue seriously.
+              </p>
+              
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p className="text-blue-800">
+                  🔗 <em>Read Owen Matson's foundational paper: The Cognitive Intraface: Toward a Critical AI Pedagogy</em>
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowAboutModal(false)}
+                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>
