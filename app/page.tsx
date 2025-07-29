@@ -59,9 +59,11 @@ export default function CoLearnInterface() {
   const [documentUploaded, setDocumentUploaded] = useState(false);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+ const scrollToBottom = () => {
+  if (messagesEndRef.current) {
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+  }
+};
 
   useEffect(() => {
     scrollToBottom();
