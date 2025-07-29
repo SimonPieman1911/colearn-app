@@ -445,7 +445,8 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
         }, 1000);
       }
 
-      if (newExchangeCount >= 8 && newExchangeCount % 4 === 0) {
+      // Show continue prompt much later - after they've had time in Phase 3
+      if (newExchangeCount >= 12 && newExchangeCount % 4 === 0) {
         setTimeout(() => {
           setShowContinuePrompt(true);
         }, 2000);
