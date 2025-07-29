@@ -1018,17 +1018,32 @@ Educational dialogue platform for reflective learning
           <div>
             <h1 className="text-2xl font-bold text-gray-900">CoLearn: Learning Dialogue with AI</h1>
             <p className="text-sm text-gray-600 mt-1">Focus: {focusQuestion}</p>
-            <div className="text-xs text-gray-500 mb-2">Debug: Exchange Count = {exchangeCount}</div>
-            <div className={`inline-block px-3 py-1 rounded-full text-xs font-medium mt-2 ${
-              exchangeCount <= 4 ? 'bg-green-50 text-green-800' :
-              exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800' :
-              'bg-purple-50 text-purple-800'
+            <div className={`inline-block px-4 py-2 rounded-lg text-sm font-medium mt-3 border-2 ${
+              exchangeCount <= 4 ? 'bg-green-50 text-green-800 border-green-200' :
+              exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+              'bg-purple-50 text-purple-800 border-purple-200'
             }`}>
-              ◉ {
-                exchangeCount <= 4 ? 'Building Understanding' :
-                exchangeCount <= 8 ? 'Exploring Perspectives' :
-                'Reflecting on Process'
-              }
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${
+                  exchangeCount <= 4 ? 'bg-green-500' :
+                  exchangeCount <= 8 ? 'bg-yellow-500' :
+                  'bg-purple-500'
+                }`}></div>
+                <span className="font-semibold">
+                  Phase {exchangeCount <= 4 ? '1: Ground' : exchangeCount <= 8 ? '2: Stretch' : '3: Deepen'} – {
+                    exchangeCount <= 4 ? 'Building shared understanding' :
+                    exchangeCount <= 8 ? 'Opening new perspectives' :
+                    'Reflecting and integrating'
+                  }
+                </span>
+              </div>
+              <div className="text-xs mt-1 opacity-75">
+                {
+                  exchangeCount <= 4 ? 'We\'re establishing foundations and getting oriented together' :
+                  exchangeCount <= 8 ? 'Now questioning assumptions and exploring different viewpoints' :
+                  'Examining how your thinking has developed through our dialogue'
+                }
+              </div>
             </div>
           </div>
           <div className="flex gap-2">
