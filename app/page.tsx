@@ -31,7 +31,7 @@
 
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, ReactElement } from 'react';
 import { Send, Pause, Lock, FileText, Brain, User, Bot, Clock, Upload } from 'lucide-react';
 
 // Type definitions
@@ -836,7 +836,7 @@ CRITICAL: Use "You" language. Be conversational, not academic. This is for the l
           {(() => {
             const content = sessionAnalysis.content;
             const sections = content.split(/\*\*(\d+\. [^*]+)\*\*/);
-            const results: JSX.Element[] = [];
+            const results: ReactElement[] = [];
             
             // Handle the title and duration first
             const titleMatch = content.match(/\*\*(CoLearn: Session Analysis)\*\*/);
