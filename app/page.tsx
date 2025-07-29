@@ -111,20 +111,20 @@ const scrollToBottom = () => {
   };
 
   // Load PDF.js library dynamically
-  const loadPDFJS = async () => {
-    if (window.pdfjsLib) return;
-    
-    return new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-      script.onload = () => {
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        resolve();
-      };
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  };
+const loadPDFJS = async () => {
+  if ((window as any).pdfjsLib) return;
+  
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    script.onload = () => {
+      (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      resolve(undefined);
+    };
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+};
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -147,11 +147,11 @@ const scrollToBottom = () => {
         
         try {
           // Load PDF.js if not already loaded
-          if (!window.pdfjsLib) {
+          if (!(window as any).pdfjsLib) {
             await loadPDFJS();
           }
           
-          const pdf = await window.pdfjsLib.getDocument({data: arrayBuffer}).promise;
+          const pdf = await (window as any).pdfjsLib.getDocument({data: arrayBuffer}).promise;
           let fullText = '';
           
           for (let i = 1; i <= pdf.numPages; i++) {
