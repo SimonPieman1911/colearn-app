@@ -102,6 +102,34 @@ export default function CoLearnInterface() {
     scrollToBottom();
   }, [dialogue]);
 
+  // Get dialogue stage styling based on exchange count
+  const getDialogueStage = () => {
+    if (exchangeCount <= 4) {
+      return {
+        stage: "Building Understanding",
+        color: "border-green-500",
+        bgColor: "bg-green-50",
+        textColor: "text-green-800"
+      };
+    } else if (exchangeCount <= 8) {
+      return {
+        stage: "Exploring Perspectives",
+        color: "border-yellow-500", 
+        bgColor: "bg-yellow-50",
+        textColor: "text-yellow-800"
+      };
+    } else {
+      return {
+        stage: "Reflecting on Process",
+        color: "border-purple-500",
+        bgColor: "bg-purple-50", 
+        textColor: "text-purple-800"
+      };
+    }
+  };
+
+  const dialogueStage = getDialogueStage();
+
   // Call our backend API
   const callAI = async (systemPrompt: string, messages: APIMessage[]): Promise<string> => {
     try {
@@ -653,60 +681,6 @@ CRITICAL: Be honest about engagement level. Don't overstate learning outcomes fo
     setShowEndReflection(false);
     setIsProcessing(false);
   };
-
-  // Get dialogue stage styling based on exchange count
-  const getDialogueStage = () => {
-    if (exchangeCount <= 4) {
-      return {
-        stage: "Building Understanding",
-        color: "border-green-500",
-        bgColor: "bg-green-50",
-        textColor: "text-green-800"
-      };
-    } else if (exchangeCount <= 8) {
-      return {
-        stage: "Exploring Perspectives",
-        color: "border-yellow-500", 
-        bgColor: "bg-yellow-50",
-        textColor: "text-yellow-800"
-      };
-    } else {
-      return {
-        stage: "Reflecting on Process",
-        color: "border-purple-500",
-        bgColor: "bg-purple-50", 
-        textColor: "text-purple-800"
-      };
-    }
-  };
-
-  // Get dialogue stage styling based on exchange count
-  const getDialogueStage = () => {
-    if (exchangeCount <= 4) {
-      return {
-        stage: "Building Understanding",
-        color: "border-green-500",
-        bgColor: "bg-green-50",
-        textColor: "text-green-800"
-      };
-    } else if (exchangeCount <= 8) {
-      return {
-        stage: "Exploring Perspectives",
-        color: "border-yellow-500", 
-        bgColor: "bg-yellow-50",
-        textColor: "text-yellow-800"
-      };
-    } else {
-      return {
-        stage: "Reflecting on Process",
-        color: "border-purple-500",
-        bgColor: "bg-purple-50", 
-        textColor: "text-purple-800"
-      };
-    }
-  };
-
-  const dialogueStage = getDialogueStage();
 
   const resetSession = (): void => {
     setUploadedFileName('');
