@@ -589,6 +589,7 @@ Before writing, evaluate:
 - Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 - Exchanges: ${exchangeCount}
 - Reflections: ${reflectionPrompts.length}
+- Learning Phase Reached: ${exchangeCount <= 4 ? 'Phase 1: Ground (Building shared understanding)' : exchangeCount <= 8 ? 'Phase 2: Stretch (Opening new perspectives)' : 'Phase 3: Deepen (Reflecting and integrating)'}
 
 If the session is very brief (under 5 minutes) with minimal exchanges (under 4) and no reflections, acknowledge the limited engagement and be honest about what can be assessed.
 
@@ -596,6 +597,7 @@ If the session is very brief (under 5 minutes) with minimal exchanges (under 4) 
 - Focus Question: ${focusQuestion}
 - Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 - Exchanges: ${exchangeCount}
+- Dialogue Phases: ${exchangeCount <= 4 ? 'Remained in Phase 1 (Ground)' : exchangeCount <= 8 ? 'Progressed to Phase 2 (Stretch)' : 'Reached Phase 3 (Deepen)'}
 
 **COMPLETE DIALOGUE:**
 ${dialogue.filter(msg => msg.type !== 'analysis_request').map(msg => {
@@ -617,25 +619,25 @@ REQUIRED FORMAT - Copy this structure exactly. Do not deviate:
 **Duration:** ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 
 **1. Session Summary**
-[Write 2-3 sentences about what was explored. If session was very brief, acknowledge this and focus on what was initiated rather than overstating depth.]
+[Write 2-3 sentences about what was explored. Include mention of which dialogue phase(s) were reached. If session was very brief, acknowledge this and focus on what was initiated rather than overstating depth.]
 
 **2. How You Showed Your Thinking**
-[Write 3-4 sentences addressing the learner directly with "You..." Be honest about the level of engagement. For brief sessions, focus on their initial approach rather than claiming deep engagement.]
+[Write 3-4 sentences addressing the learner directly with "You..." Be honest about the level of engagement. Include a brief quote from their dialogue that shows their thinking. For brief sessions, focus on their initial approach rather than claiming deep engagement.]
 
 **3. What You Figured Out**
 [Only list insights that were actually developed in the dialogue. For very brief sessions, this might be 1-2 basic points or "Limited engagement in this brief session meant fewer insights were developed."]
 
-**4. Questions You Might Explore Next**
-[Suggest 1-2 follow-up questions based on what was actually discussed]
+**4. Ideas You Could Explore Further**
+[Suggest 1-2 follow-up questions based on what was actually discussed. Use warm, inviting language rather than assignment-like directives.]
 
-**5. Reflection Paragraph**
-[Write an honest reflective summary about the student's actual engagement level. For brief sessions with minimal interaction, acknowledge this honestly rather than inflating the assessment. Focus on what can genuinely be observed from their participation.]
+**5. Reflection Summary**
+[Write an honest, warm summary about the student's engagement and learning process. Reference the dialogue phases if relevant. For brief sessions with minimal interaction, acknowledge this honestly rather than inflating the assessment. Focus on what can genuinely be observed from their participation. Write in third person about the student.]
 
 **6. Learner Reflections**
 **Content Learning:** "${endReflectionAnswers[0] || 'No reflection provided'}"
 **Process Learning:** "${endReflectionAnswers[1] || 'No reflection provided'}"
 
-CRITICAL: Be honest about engagement level. Don't overstate learning outcomes for brief, minimal sessions. Use "You" language but calibrate praise to actual participation.`;
+CRITICAL: Be honest about engagement level. Use warm, supportive language that's grounded rather than overly positive. Don't overstate learning outcomes for brief, minimal sessions. Reference the dialogue phases (Ground/Stretch/Deepen) when relevant.`;
       
       console.log('=== SENDING TO AI ===', analysisPrompt);
       const analysisResponse = await callAI(analysisPrompt, [
@@ -800,7 +802,7 @@ CRITICAL: Be honest about engagement level. Don't overstate learning outcomes fo
         <div className="space-y-6">
           <div className="bg-blue-50 p-4 rounded-lg">
             <h3 className="font-medium text-blue-900 mb-3">Content Learning</h3>
-            <p className="text-blue-800 mb-3">What did you learn or understand differently about your material through this conversation?</p>
+            <p className="text-blue-800 mb-3">What idea are you still thinking about after this dialogue?</p>
             <textarea
               value={endReflectionAnswers[0]}
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -808,7 +810,7 @@ CRITICAL: Be honest about engagement level. Don't overstate learning outcomes fo
                 newAnswers[0] = e.target.value;
                 setEndReflectionAnswers(newAnswers);
               }}
-              placeholder="Your reflection on what you learned about the content..."
+              placeholder="An idea, question, or insight that's staying with you..."
               className="w-full h-32 p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
               rows={4}
             />
