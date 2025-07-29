@@ -1023,6 +1023,7 @@ Educational dialogue platform for reflective learning
               exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
               'bg-purple-50 text-purple-800 border-purple-200'
             }`}>
+              <div className="text-xs font-bold mb-1 opacity-60">DIALOGUE STAGES</div>
               <div className="flex items-center gap-2">
                 <div className={`w-2 h-2 rounded-full ${
                   exchangeCount <= 4 ? 'bg-green-500' :
