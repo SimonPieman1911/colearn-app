@@ -464,7 +464,6 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
 
     setIsProcessing(false);
   };
-
   const triggerReflectionPrompt = async (): Promise<void> => {
     // Generate contextual reflection prompt based on recent dialogue
     try {
@@ -473,8 +472,8 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
 
 RECENT EXCHANGE:
 ${recentDialogue.map(msg => 
-  `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content}`
-).join('\n')}
+        `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content}`
+      ).join('\n')}
 
 Generate a reflection question that helps them think about:
 - What just happened in their thinking
@@ -537,8 +536,8 @@ DIALOGUE CONTEXT:
 
 RECENT DIALOGUE PATTERNS:
 ${dialogue.slice(-6).filter(msg => msg.type === 'user' || msg.type === 'ai').map(msg => 
-  `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content.substring(0, 120)}...`
-).join('\n')}
+        `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content.substring(0, 120)}...`
+      ).join('\n')}
 
 Generate a question that helps them notice:
 - How their thinking shifted over time during this dialogue
@@ -606,11 +605,11 @@ If the learner engaged in reflections during the dialogue, weave insights from t
 
 **COMPLETE DIALOGUE:**
 ${dialogue.filter(msg => msg.type !== 'analysis_request').map(msg => {
-  if (msg.type === 'reflection') {
-    return `REFLECTION (${msg.prompt}): ${msg.content}`;
-  }
-  return `${msg.type.toUpperCase()}: ${msg.content}`;
-}).join('\n\n')}
+        if (msg.type === 'reflection') {
+          return `REFLECTION (${msg.prompt}): ${msg.content}`;
+        }
+        return `${msg.type.toUpperCase()}: ${msg.content}`;
+      }).join('\n\n')}
 
 **STUDENT'S END REFLECTIONS:**
 Content Learning: "${endReflectionAnswers[0] || 'No reflection provided'}"
@@ -694,180 +693,108 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
     setReflectionInput('');
   };
 
-  if (!sessionActive) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-2">
-            <img 
-              src="/Co-Learn Logo.png" 
-              alt="CoLearn Logo" 
-              className="h-12 w-auto"
-            />
-            <h1 className="text-3xl font-bold text-gray-900">CoLearn: Human + AI, in dialogue</h1>
+  // Main component return - all screens with global modals
+  return (
+    <div>
+      {/* INITIAL SETUP SCREEN */}
+      {!sessionActive && (
+        <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
+          <div className="mb-8">
+            <div className="flex items-center gap-4 mb-2">
+              <img 
+                src="/Co-Learn Logo.png" 
+                alt="CoLearn Logo" 
+                className="h-12 w-auto"
+              />
+              <h1 className="text-3xl font-bold text-gray-900">CoLearn: Human + AI, in dialogue</h1>
+            </div>
+            <p className="text-gray-600">Have a guided learning conversation with AI about any material you're studying</p>
           </div>
-          <p className="text-gray-600">Have a guided learning conversation with AI about any material you're studying</p>
-        </div>
 
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FileText className="inline w-4 h-4 mr-1" />
-              Source Material
-            </label>
-            
-            <div className="mb-4">
-              <div className="flex items-center gap-4">
-                <label className="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg border border-blue-200 transition-colors">
-                  <input
-                    type="file"
-                    accept=".pdf,.txt,.md,.docx,.doc,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                  />
-                  <Upload className="inline w-4 h-4 mr-1" />
-                  Upload Document
-                </label>
-                <span className="text-gray-500 text-sm">or paste your material below</span>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <FileText className="inline w-4 h-4 mr-1" />
+                Source Material
+              </label>
+              
+              <div className="mb-4">
+                <div className="flex items-center gap-4">
+                  <label className="cursor-pointer bg-blue-50 hover:bg-blue-100 text-blue-700 px-4 py-2 rounded-lg border border-blue-200 transition-colors">
+                    <input
+                      type="file"
+                      accept=".pdf,.txt,.md,.docx,.doc,text/*,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <Upload className="inline w-4 h-4 mr-1" />
+                    Upload Document
+                  </label>
+                  <span className="text-gray-500 text-sm">or paste your material below</span>
+                </div>
+                
+                {uploadedFileName && (
+                  <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-green-600" />
+                      <span className="text-green-800 text-sm font-medium">{uploadedFileName}</span>
+                    </div>
+                    <button
+                      onClick={removeFile}
+                      className="text-green-600 hover:text-green-800 text-sm underline"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                )}
               </div>
               
-              {uploadedFileName && (
-                <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-green-600" />
-                    <span className="text-green-800 text-sm font-medium">{uploadedFileName}</span>
-                  </div>
-                  <button
-                    onClick={removeFile}
-                    className="text-green-600 hover:text-green-800 text-sm underline"
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
+              <textarea
+                value={sourceText}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSourceText(e.target.value)}
+                placeholder="Paste your text, article, notes, or any material you want to learn about here... (Or upload PDF, Word, or text files above)"
+                className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+              />
             </div>
-            
-            <textarea
-              value={sourceText}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setSourceText(e.target.value)}
-              placeholder="Paste your text, article, notes, or any material you want to learn about here... (Or upload PDF, Word, or text files above)"
-              className="w-full h-40 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-            />
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <Brain className="inline w-4 h-4 mr-1" />
-              Your Main Question
-            </label>
-            <input
-              type="text"
-              value={focusQuestion}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFocusQuestion(e.target.value)}
-              placeholder="What do you want to explore or understand better about this material?"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-            />
-            <p className="text-sm text-gray-500 mt-1">
-              Examples: "How does this theory apply to real situations?" • "What are the main arguments and do I agree?" • "How does this connect to what I already know?"
-            </p>
-          </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <Brain className="inline w-4 h-4 mr-1" />
+                Your Main Question
+              </label>
+              <input
+                type="text"
+                value={focusQuestion}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFocusQuestion(e.target.value)}
+                placeholder="What do you want to explore or understand better about this material?"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Examples: "How does this theory apply to real situations?" • "What are the main arguments and do I agree?" • "How does this connect to what I already know?"
+              </p>
+            </div>
 
-          <button
-            onClick={startSession}
-            disabled={isProcessing}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
-          >
-            {isProcessing ? 'Starting Session...' : 'Begin Learning Dialogue with AI'}
-          </button>
-        </div>
-
-        <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-          <h3 className="font-medium text-blue-900 mb-2">How This Works</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
-            <li>• Upload documents or paste any material you're studying</li>
-            <li>• Set a main question to guide your learning conversation</li>
-            <li>• The AI will engage as your cognitive partner, offering perspectives and questions</li>
-            <li>• <strong>Reflect button:</strong> Use anytime to pause and think about your learning</li>
-            <li>• <strong>Automatic prompts:</strong> Reflection questions appear every few exchanges</li>
-            <li>• <strong>End Session:</strong> Lock when finished to get learning analysis</li>
-          </ul>
-        </div>
-
-        {/* About button for initial screen */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={() => setShowAboutModal(true)}
-            className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
-          >
-            What Is CoLearn?
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (showEndReflection) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">CoLearn: Session Reflection</h1>
-          <p className="text-gray-600">Please reflect on your learning dialogue experience</p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-3">Content Learning</h3>
-            <p className="text-blue-800 mb-3">What idea are you still thinking about after this dialogue?</p>
-            <textarea
-              value={endReflectionAnswers[0]}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                const newAnswers = [...endReflectionAnswers];
-                newAnswers[0] = e.target.value;
-                setEndReflectionAnswers(newAnswers);
-              }}
-              placeholder="An idea, question, or insight that's staying with you..."
-              className="w-full h-32 p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              rows={4}
-            />
-          </div>
-
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-medium text-green-900 mb-3">Process Learning</h3>
-            <p className="text-green-800 mb-3">{generatedProcessQuestion}</p>
-            <textarea
-              value={endReflectionAnswers[1]}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                const newAnswers = [...endReflectionAnswers];
-                newAnswers[1] = e.target.value;
-                setEndReflectionAnswers(newAnswers);
-              }}
-              placeholder="Your reflection on the learning process..."
-              className="w-full h-32 p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-              rows={4}
-            />
-          </div>
-
-          <div className="flex gap-4">
             <button
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                setShowEndReflection(false);
-                setEndReflectionAnswers(['', '']);
-                handleEndReflectionSubmit();
-              }}
-              className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors"
-            >
-              Skip Reflection
-            </button>
-            <button
-              onClick={handleEndReflectionSubmit}
+              onClick={startSession}
               disabled={isProcessing}
-              className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50"
             >
-              {isProcessing ? 'Generating Analysis...' : 'Get Learning Analysis'}
+              {isProcessing ? 'Starting Session...' : 'Begin Learning Dialogue with AI'}
             </button>
           </div>
 
-          {/* About button for reflection screen */}
+          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h3 className="font-medium text-blue-900 mb-2">How This Works</h3>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Upload documents or paste any material you're studying</li>
+              <li>• Set a main question to guide your learning conversation</li>
+              <li>• The AI will engage as your cognitive partner, offering perspectives and questions</li>
+              <li>• <strong>Reflect button:</strong> Use anytime to pause and think about your learning</li>
+              <li>• <strong>Automatic prompts:</strong> Reflection questions appear every few exchanges</li>
+              <li>• <strong>End Session:</strong> Lock when finished to get learning analysis</li>
+            </ul>
+          </div>
+
           <div className="mt-6 text-center">
             <button
               onClick={() => setShowAboutModal(true)}
@@ -877,104 +804,172 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
             </button>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  if (sessionAnalysis) {
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">CoLearn: Learning Analysis</h1>
-          <p className="text-gray-600">AI analysis of your dialogue session</p>
-        </div>
-
-        <div className="space-y-6">
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-bold text-gray-900 mb-2">Session Overview</h3>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="font-medium text-gray-900">Focus Question:</span>
-                <p className="text-gray-700 mt-1">{focusQuestion}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-900">Duration:</span>
-                <p className="text-gray-700 mt-1">
-                  {sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
-                </p>
-              </div>
-            </div>
+      {/* END REFLECTION SCREEN */}
+      {sessionActive && showEndReflection && (
+        <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">CoLearn: Session Reflection</h1>
+            <p className="text-gray-600">Please reflect on your learning dialogue experience</p>
           </div>
 
-          {/* Parse analysis into colored sections */}
-          {(() => {
-            const content = sessionAnalysis.content;
-            const sections = content.split(/\*\*(\d+\. [^*]+)\*\*/);
-            const results: ReactElement[] = [];
-            
-            // Handle the title and duration first
-            const titleMatch = content.match(/\*\*(CoLearn: Session Analysis)\*\*/);
-            const subtitleMatch = content.match(/\*(Learning insights from your dialogue session)\*/);
-            const durationMatch = content.match(/\*\*Duration:\*\* (.+?)(?=\*\*|$)/);
-            
-            if (titleMatch && subtitleMatch && durationMatch) {
-              results.push(
-                <div key="header" className="bg-indigo-50 p-4 rounded-lg">
-                  <h3 className="font-bold text-indigo-900 text-lg mb-1">{titleMatch[1]}</h3>
-                  <p className="text-indigo-700 italic text-sm mb-2">{subtitleMatch[1]}</p>
-                  <p className="text-indigo-800 font-medium">Duration: {durationMatch[1]}</p>
+          <div className="space-y-6">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <h3 className="font-medium text-blue-900 mb-3">Content Learning</h3>
+              <p className="text-blue-800 mb-3">What idea are you still thinking about after this dialogue?</p>
+              <textarea
+                value={endReflectionAnswers[0]}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  const newAnswers = [...endReflectionAnswers];
+                  newAnswers[0] = e.target.value;
+                  setEndReflectionAnswers(newAnswers);
+                }}
+                placeholder="An idea, question, or insight that's staying with you..."
+                className="w-full h-32 p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                rows={4}
+              />
+            </div>
+
+            <div className="bg-green-50 p-4 rounded-lg">
+              <h3 className="font-medium text-green-900 mb-3">Process Learning</h3>
+              <p className="text-green-800 mb-3">{generatedProcessQuestion}</p>
+              <textarea
+                value={endReflectionAnswers[1]}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                  const newAnswers = [...endReflectionAnswers];
+                  newAnswers[1] = e.target.value;
+                  setEndReflectionAnswers(newAnswers);
+                }}
+                placeholder="Your reflection on the learning process..."
+                className="w-full h-32 p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                rows={4}
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  setShowEndReflection(false);
+                  setEndReflectionAnswers(['', '']);
+                  handleEndReflectionSubmit();
+                }}
+                className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors"
+              >
+                Skip Reflection
+              </button>
+              <button
+                onClick={handleEndReflectionSubmit}
+                disabled={isProcessing}
+                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              >
+                {isProcessing ? 'Generating Analysis...' : 'Get Learning Analysis'}
+              </button>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowAboutModal(true)}
+                className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+              >
+                What Is CoLearn?
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ANALYSIS RESULTS SCREEN */}
+      {sessionActive && sessionAnalysis && !showEndReflection && (
+        <div className="max-w-4xl mx-auto p-6 bg-white min-h-screen">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">CoLearn: Learning Analysis</h1>
+            <p className="text-gray-600">AI analysis of your dialogue session</p>
+          </div>
+
+          <div className="space-y-6">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-bold text-gray-900 mb-2">Session Overview</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-900">Focus Question:</span>
+                  <p className="text-gray-700 mt-1">{focusQuestion}</p>
                 </div>
-              );
-            }
-            
-            // Process numbered sections
-            for (let i = 1; i < sections.length; i += 2) {
-              const title = sections[i];
-              let content = sections[i + 1];
+                <div>
+                  <span className="font-medium text-gray-900">Duration:</span>
+                  <p className="text-gray-700 mt-1">
+                    {sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Parse analysis into colored sections */}
+            {(() => {
+              const content = sessionAnalysis.content;
+              const sections = content.split(/\*\*(\d+\. [^*]+)\*\*/);
+              const results: ReactElement[] = [];
               
-              if (title && content) {
-                let bgColor = 'bg-blue-50';
-                let textColor = 'text-blue-900';
-                let contentColor = 'text-blue-800';
-                
-                if (title.includes('Session Summary')) {
-                  bgColor = 'bg-green-50'; textColor = 'text-green-900'; contentColor = 'text-green-800';
-                } else if (title.includes('How You Showed')) {
-                  bgColor = 'bg-purple-50'; textColor = 'text-purple-900'; contentColor = 'text-purple-800';
-                } else if (title.includes('What You Figured')) {
-                  bgColor = 'bg-orange-50'; textColor = 'text-orange-900'; contentColor = 'text-orange-800';
-                } else if (title.includes('Questions You Might')) {
-                  bgColor = 'bg-yellow-50'; textColor = 'text-yellow-900'; contentColor = 'text-yellow-800';
-                } else if (title.includes('Reflection Paragraph')) {
-                  bgColor = 'bg-pink-50'; textColor = 'text-pink-900'; contentColor = 'text-pink-800';
-                } else if (title.includes('Learner Reflections')) {
-                  bgColor = 'bg-gray-50'; textColor = 'text-gray-900'; contentColor = 'text-gray-800';
-                  
-                  // Special handling for Learner Reflections section to format the bold text
-                  content = content.replace(/\*\*(Content Learning:)\*\*/g, '<strong>$1</strong>');
-                  content = content.replace(/\*\*(Process Learning:)\*\*/g, '<strong>$1</strong>');
-                }
-                
+              // Handle the title and duration first
+              const titleMatch = content.match(/\*\*(CoLearn: Session Analysis)\*\*/);
+              const subtitleMatch = content.match(/\*(Learning insights from your dialogue session)\*/);
+              const durationMatch = content.match(/\*\*Duration:\*\* (.+?)(?=\*\*|$)/);
+              
+              if (titleMatch && subtitleMatch && durationMatch) {
                 results.push(
-                  <div key={i} className={`${bgColor} p-4 rounded-lg`}>
-                    <h3 className={`font-bold ${textColor} mb-3`}>{title}</h3>
-                    <div 
-                      className={`${contentColor} whitespace-pre-wrap`}
-                      dangerouslySetInnerHTML={{__html: content.trim()}}
-                    />
+                  <div key="header" className="bg-indigo-50 p-4 rounded-lg">
+                    <h3 className="font-bold text-indigo-900 text-lg mb-1">{titleMatch[1]}</h3>
+                    <p className="text-indigo-700 italic text-sm mb-2">{subtitleMatch[1]}</p>
+                    <p className="text-indigo-800 font-medium">Duration: {durationMatch[1]}</p>
                   </div>
                 );
               }
-            }
-            
-            return results;
-          })()}
+              
+              // Process numbered sections
+              for (let i = 1; i < sections.length; i += 2) {
+                const title = sections[i];
+                let content = sections[i + 1];
+                
+                if (title && content) {
+                  let bgColor = 'bg-blue-50';
+                  let textColor = 'text-blue-900';
+                  let contentColor = 'text-blue-800';
+                  
+                  if (title.includes('Session Summary')) {
+                    bgColor = 'bg-green-50'; textColor = 'text-green-900'; contentColor = 'text-green-800';
+                  } else if (title.includes('How You Showed')) {
+                    bgColor = 'bg-purple-50'; textColor = 'text-purple-900'; contentColor = 'text-purple-800';
+                  } else if (title.includes('What You Figured')) {
+                    bgColor = 'bg-orange-50'; textColor = 'text-orange-900'; contentColor = 'text-orange-800';
+                  } else if (title.includes('Ideas You Could')) {
+                    bgColor = 'bg-yellow-50'; textColor = 'text-yellow-900'; contentColor = 'text-yellow-800';
+                  } else if (title.includes('Reflection Summary')) {
+                    bgColor = 'bg-pink-50'; textColor = 'text-pink-900'; contentColor = 'text-pink-800';
+                  } else if (title.includes('Learner Reflections')) {
+                    bgColor = 'bg-gray-50'; textColor = 'text-gray-900'; contentColor = 'text-gray-800';
+                    content = content.replace(/\*\*(Content Learning:)\*\*/g, '<strong>$1</strong>');
+                    content = content.replace(/\*\*(Process Learning:)\*\*/g, '<strong>$1</strong>');
+                  }
+                  
+                  results.push(
+                    <div key={i} className={`${bgColor} p-4 rounded-lg`}>
+                      <h3 className={`font-bold ${textColor} mb-3`}>{title}</h3>
+                      <div 
+                        className={`${contentColor} whitespace-pre-wrap`}
+                        dangerouslySetInnerHTML={{__html: content.trim()}}
+                      />
+                    </div>
+                  );
+                }
+              }
+              
+              return results;
+            })()}
 
-          <div className="flex gap-4">
-            <button
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                // Create a formatted text report
-                const reportContent = `
+            <div className="flex gap-4">
+              <button
+                onClick={() => {
+                  const reportContent = `
 COLEARN LEARNING ANALYSIS REPORT
 ================================
 
@@ -1002,245 +997,246 @@ ${sessionAnalysis.studentReflections.processLearning}
 ---
 Generated by CoLearn: Human + AI, in dialogue
 Educational dialogue platform for reflective learning
-                `.trim();
-                
-                const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                
-                const exportFileDefaultName = `CoLearn-Analysis-${new Date().toISOString().split('T')[0]}.txt`;
-                
-                const linkElement = document.createElement('a');
-                linkElement.setAttribute('href', url);
-                linkElement.setAttribute('download', exportFileDefaultName);
-                linkElement.click();
-                
-                // Clean up the URL object
-                URL.revokeObjectURL(url);
-              }}
-              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <FileText className="inline w-4 h-4 mr-1" />
-              Save Report
-            </button>
-            <button
-              onClick={resetSession}
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Start New Session
-            </button>
+                  `.trim();
+                  
+                  const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
+                  const url = URL.createObjectURL(blob);
+                  
+                  const exportFileDefaultName = `CoLearn-Analysis-${new Date().toISOString().split('T')[0]}.txt`;
+                  
+                  const linkElement = document.createElement('a');
+                  linkElement.setAttribute('href', url);
+                  linkElement.setAttribute('download', exportFileDefaultName);
+                  linkElement.click();
+                  
+                  URL.revokeObjectURL(url);
+                }}
+                className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors"
+              >
+                <FileText className="inline w-4 h-4 mr-1" />
+                Save Report
+              </button>
+              <button
+                onClick={resetSession}
+                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Start New Session
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className={`max-w-4xl mx-auto p-6 bg-white min-h-screen ${
-      exchangeCount <= 4 ? 'border-l-4 border-green-500' :
-      exchangeCount <= 8 ? 'border-l-4 border-yellow-500' : 
-      'border-l-4 border-purple-500'
-    }`}>
-      <div className="mb-6 pb-4 border-b border-gray-200">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">CoLearn: Learning Dialogue with AI</h1>
-            <p className="text-sm text-gray-600 mt-1">Focus: {focusQuestion}</p>
-            <div className={`inline-block px-4 py-2 rounded-lg text-sm font-medium mt-3 border-2 ${
-              exchangeCount <= 4 ? 'bg-green-50 text-green-800 border-green-200' :
-              exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
-              'bg-purple-50 text-purple-800 border-purple-200'
-            }`}>
-              <div className="text-xs font-bold mb-1 opacity-60">DIALOGUE STAGES</div>
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${
-                  exchangeCount <= 4 ? 'bg-green-500' :
-                  exchangeCount <= 8 ? 'bg-yellow-500' :
-                  'bg-purple-500'
-                }`}></div>
-                <span className="font-semibold">
-                  Phase {exchangeCount <= 4 ? '1: Ground' : exchangeCount <= 8 ? '2: Stretch' : '3: Deepen'} – {
-                    exchangeCount <= 4 ? 'Building shared understanding' :
-                    exchangeCount <= 8 ? 'Opening new perspectives' :
-                    'Reflecting and integrating'
-                  }
-                </span>
+      {/* ACTIVE DIALOGUE SCREEN */}
+      {sessionActive && !sessionAnalysis && !showEndReflection && (
+        <div className={`max-w-4xl mx-auto p-6 bg-white min-h-screen ${
+          exchangeCount <= 4 ? 'border-l-4 border-green-500' :
+          exchangeCount <= 8 ? 'border-l-4 border-yellow-500' : 
+          'border-l-4 border-purple-500'
+        }`}>
+          <div className="mb-6 pb-4 border-b border-gray-200">
+            <div className="flex justify-between items-start">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">CoLearn: Learning Dialogue with AI</h1>
+                <p className="text-sm text-gray-600 mt-1">Focus: {focusQuestion}</p>
+                <div className={`inline-block px-4 py-2 rounded-lg text-sm font-medium mt-3 border-2 ${
+                  exchangeCount <= 4 ? 'bg-green-50 text-green-800 border-green-200' :
+                  exchangeCount <= 8 ? 'bg-yellow-50 text-yellow-800 border-yellow-200' :
+                  'bg-purple-50 text-purple-800 border-purple-200'
+                }`}>
+                  <div className="text-xs font-bold mb-1 opacity-60">DIALOGUE STAGES</div>
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      exchangeCount <= 4 ? 'bg-green-500' :
+                      exchangeCount <= 8 ? 'bg-yellow-500' :
+                      'bg-purple-500'
+                    }`}></div>
+                    <span className="font-semibold">
+                      Phase {exchangeCount <= 4 ? '1: Ground' : exchangeCount <= 8 ? '2: Stretch' : '3: Deepen'} – {
+                        exchangeCount <= 4 ? 'Building shared understanding' :
+                        exchangeCount <= 8 ? 'Opening new perspectives' :
+                        'Reflecting and integrating'
+                      }
+                    </span>
+                  </div>
+                  <div className="text-xs mt-1 opacity-75">
+                    {
+                      exchangeCount <= 4 ? 'We\'re establishing foundations and getting oriented together' :
+                      exchangeCount <= 8 ? 'Now questioning assumptions and exploring different viewpoints' :
+                      'Examining how your thinking has developed through our dialogue'
+                    }
+                  </div>
+                </div>
               </div>
-              <div className="text-xs mt-1 opacity-75">
-                {
-                  exchangeCount <= 4 ? 'We\'re establishing foundations and getting oriented together' :
-                  exchangeCount <= 8 ? 'Now questioning assumptions and exploring different viewpoints' :
-                  'Examining how your thinking has developed through our dialogue'
-                }
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    if (confirm('Are you sure you want to restart? This will clear your current dialogue and start fresh.')) {
+                      resetSession();
+                    }
+                  }}
+                  className="flex items-center gap-1 px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors text-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Restart
+                </button>
+                <button
+                  onClick={triggerReflectionPrompt}
+                  className="flex items-center gap-1 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors text-sm"
+                >
+                  <Pause className="w-4 h-4" />
+                  Reflect
+                </button>
+                <button
+                  onClick={lockSession}
+                  disabled={dialogue.length < 3}
+                  className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Lock className="w-4 h-4" />
+                  End Session
+                </button>
               </div>
             </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                if (confirm('Are you sure you want to restart? This will clear your current dialogue and start fresh.')) {
-                  resetSession();
-                }
-              }}
-              className="flex items-center gap-1 px-3 py-2 bg-purple-100 text-purple-800 rounded-lg hover:bg-purple-200 transition-colors text-sm"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Restart
-            </button>
-            <button
-              onClick={triggerReflectionPrompt}
-              className="flex items-center gap-1 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors text-sm"
-            >
-              <Pause className="w-4 h-4" />
-              Reflect
-            </button>
-            <button
-              onClick={lockSession}
-              disabled={dialogue.length < 3}
-              className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-800 rounded-lg hover:bg-red-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Lock className="w-4 h-4" />
-              End Session
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <div className="flex-1 mb-6">
-        <div className="space-y-4 max-h-96 overflow-y-auto">
-          {dialogue.map((message, idx) => (
-            <div key={idx} className="space-y-2">
-              {message.type === 'system' && (
-                <div className="w-full text-center">
-                  <div className="inline-block bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm">
-                    <Clock className="inline w-4 h-4 mr-1" />
-                    {message.content}
-                  </div>
-                </div>
-              )}
-              
-              {message.type === 'reflection' && (
-                <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
-                  <div className="text-sm font-medium text-yellow-800 mb-2">
-                    Reflection: {message.prompt}
-                  </div>
-                  <div className="text-yellow-700">{message.content}</div>
-                  <div className="text-xs text-yellow-600 mt-2">{message.timestamp}</div>
-                </div>
-              )}
-
-              {message.type === 'user' && (
-                <div className="flex gap-3 justify-end">
-                  <div className="max-w-2xl">
-                    <div className="bg-blue-600 text-white p-3 rounded-lg rounded-br-sm whitespace-pre-wrap">
-                      {message.content}
+          <div className="flex-1 mb-6">
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {dialogue.map((message, idx) => (
+                <div key={idx} className="space-y-2">
+                  {message.type === 'system' && (
+                    <div className="w-full text-center">
+                      <div className="inline-block bg-gray-100 text-gray-600 px-4 py-2 rounded-lg text-sm">
+                        <Clock className="inline w-4 h-4 mr-1" />
+                        {message.content}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1 text-right">{message.timestamp}</div>
-                  </div>
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                    <User className="w-4 h-4" />
-                  </div>
-                </div>
-              )}
+                  )}
+                  
+                  {message.type === 'reflection' && (
+                    <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                      <div className="text-sm font-medium text-yellow-800 mb-2">
+                        Reflection: {message.prompt}
+                      </div>
+                      <div className="text-yellow-700">{message.content}</div>
+                      <div className="text-xs text-yellow-600 mt-2">{message.timestamp}</div>
+                    </div>
+                  )}
 
-              {message.type === 'ai' && (
+                  {message.type === 'user' && (
+                    <div className="flex gap-3 justify-end">
+                      <div className="max-w-2xl">
+                        <div className="bg-blue-600 text-white p-3 rounded-lg rounded-br-sm whitespace-pre-wrap">
+                          {message.content}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 text-right">{message.timestamp}</div>
+                      </div>
+                      <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                        <User className="w-4 h-4" />
+                      </div>
+                    </div>
+                  )}
+
+                  {message.type === 'ai' && (
+                    <div className="flex gap-3 justify-start">
+                      <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white">
+                        <Bot className="w-4 h-4" />
+                      </div>
+                      <div className="max-w-2xl">
+                        <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-sm whitespace-pre-wrap">
+                          {message.content}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">{message.timestamp}</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+              
+              {isProcessing && (
                 <div className="flex gap-3 justify-start">
                   <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white">
                     <Bot className="w-4 h-4" />
                   </div>
-                  <div className="max-w-2xl">
-                    <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-sm whitespace-pre-wrap">
-                      {message.content}
+                  <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-sm">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">{message.timestamp}</div>
                   </div>
                 </div>
               )}
             </div>
-          ))}
-          
-          {isProcessing && (
-            <div className="flex gap-3 justify-start">
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center text-white">
-                <Bot className="w-4 h-4" />
-              </div>
-              <div className="bg-gray-100 text-gray-900 p-3 rounded-lg rounded-bl-sm">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            <div ref={messagesEndRef} />
+          </div>
+
+          {showContinuePrompt && !sessionLocked && (
+            <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-medium text-orange-900 mb-2">Ready to wrap up?</h4>
+                  <p className="text-orange-800 text-sm">You've had a good exploration. Continue the dialogue or end the session for analysis.</p>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <button
+                    onClick={() => setShowContinuePrompt(false)}
+                    className="px-3 py-1 bg-orange-100 text-orange-700 rounded text-sm hover:bg-orange-200 transition-colors"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    onClick={lockSession}
+                    className="px-3 py-1 bg-orange-600 text-white rounded text-sm hover:bg-orange-700 transition-colors"
+                  >
+                    End Session
+                  </button>
                 </div>
               </div>
             </div>
           )}
-        </div>
-        <div ref={messagesEndRef} />
-      </div>
 
-      {showContinuePrompt && !sessionLocked && (
-        <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-          <div className="flex justify-between items-start">
-            <div>
-              <h4 className="font-medium text-orange-900 mb-2">Ready to wrap up?</h4>
-              <p className="text-orange-800 text-sm">You've had a good exploration. Continue the dialogue or end the session for analysis.</p>
+          {!sessionLocked && (
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex gap-3">
+                <textarea
+                  value={currentInput}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCurrentInput(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Continue your dialogue with AI... (Shift+Enter for new line, Enter to send)"
+                  className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
+                  rows={3}
+                  disabled={isProcessing}
+                />
+                <button
+                  onClick={handleSendMessage}
+                  disabled={isProcessing || !currentInput.trim()}
+                  className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowAboutModal(true)}
+                  className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+                >
+                  What Is CoLearn?
+                </button>
+              </div>
             </div>
-            <div className="flex gap-2 ml-4">
-              <button
-                onClick={() => setShowContinuePrompt(false)}
-                className="px-3 py-1 bg-orange-100 text-orange-700 rounded text-sm hover:bg-orange-200 transition-colors"
-              >
-                Continue
-              </button>
-              <button
-                onClick={lockSession}
-                className="px-3 py-1 bg-orange-600 text-white rounded text-sm hover:bg-orange-700 transition-colors"
-              >
-                End Session
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
-      {!sessionLocked && (
-        <div className="border-t border-gray-200 pt-4">
-          <div className="flex gap-3">
-            <textarea
-              value={currentInput}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCurrentInput(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder="Continue your dialogue with AI... (Shift+Enter for new line, Enter to send)"
-              className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
-              rows={3}
-              disabled={isProcessing}
-            />
-            <button
-              onClick={handleSendMessage}
-              disabled={isProcessing || !currentInput.trim()}
-              className="bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-          
-          {/* About button */}
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setShowAboutModal(true)}
-              className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
-            >
-              What Is CoLearn?
-            </button>
-          </div>
-        </div>
-      )}
-
+      {/* GLOBAL MODALS - Available from all screens */}
       {(showReflectionModal || showAboutModal) && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
           {showReflectionModal && (
@@ -1256,7 +1252,7 @@ Educational dialogue platform for reflective learning
               />
               <div className="flex gap-3">
                 <button
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  onClick={() => {
                     setShowReflectionModal(false);
                     setReflectionInput('');
                   }}
