@@ -241,7 +241,8 @@ export default function CoLearnInterface() {
 
         } catch (wordError) {
           console.error('Word extraction failed:', wordError);
-          extractedContent = `[Word Document: ${file.name} - Content extraction failed (${wordError.message}). Please copy and paste the text manually.]`;
+          const errorMessage = wordError instanceof Error ? wordError.message : 'Unknown error';
+          extractedContent = `[Word Document: ${file.name} - Content extraction failed (${errorMessage}). Please copy and paste the text manually.]`;
         }
         
       } else if (fileType.startsWith('text/') || fileName.endsWith('.txt') || fileName.endsWith('.md')) {
