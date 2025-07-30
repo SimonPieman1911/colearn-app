@@ -1243,118 +1243,173 @@ Educational dialogue platform for reflective learning
 
       {(showReflectionModal || showAboutModal) && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
-          <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 shadow-2xl border border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Reflection Prompt</h3>
-            <p className="text-gray-700 mb-4">{currentReflection}</p>
-            <textarea
-              value={reflectionInput}
-              placeholder="Your reflection..."
-              className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-gray-900 resize-none"
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReflectionInput(e.target.value)}
-              autoFocus
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  setShowReflectionModal(false);
-                  setReflectionInput('');
-                }}
-                className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-              >
-                Skip
-              </button>
-              <button
-                onClick={() => submitReflection(reflectionInput)}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                Submit
-              </button>
+          {showReflectionModal && (
+            <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 shadow-2xl border border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Reflection Prompt</h3>
+              <p className="text-gray-700 mb-4">{currentReflection}</p>
+              <textarea
+                value={reflectionInput}
+                placeholder="Your reflection..."
+                className="w-full h-24 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent mb-4 text-gray-900 resize-none"
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReflectionInput(e.target.value)}
+                autoFocus
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    setShowReflectionModal(false);
+                    setReflectionInput('');
+                  }}
+                  className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Skip
+                </button>
+                <button
+                  onClick={() => submitReflection(reflectionInput)}
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  Submit
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
 
-      {showAboutModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
-          <div className="bg-white p-8 rounded-lg max-w-2xl w-full mx-4 shadow-2xl border border-gray-200 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-start mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">About CoLearn: Human + AI, in Dialogue</h2>
-              <button
-                onClick={() => setShowAboutModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="space-y-4 text-gray-700 leading-relaxed">
-              <p>
-                <strong>CoLearn</strong> is an experimental educational dialogue system designed to support reflective learning through conversation with AI. Rooted in dialogic and posthuman theories of learning — and particularly inspired by <strong>Owen Matson's</strong> concept of the <em>cognitive intraface</em> — CoLearn invites learners to treat understanding not as something received, but as something <strong>co-constructed through interaction</strong>.
-              </p>
-              
-              <p>
-                Rather than positioning AI as a tutor or content expert, CoLearn frames it as a <strong>cognitive partner</strong> — a system with which meaning can be made, questioned, and reshaped. It operates on the belief that cognition is distributed across human and machine, and that deep learning emerges not from answers, but from <strong>friction, surprise, and recursive reflection</strong>.
-              </p>
-              
-              <div>
-                <p className="mb-2">The dialogue moves through three phases:</p>
-                <ul className="list-disc ml-6 space-y-1">
-                  <li><strong>Ground</strong>: Orient to the material. Ask clarifying questions. Build a shared foundation.</li>
-                  <li><strong>Stretch</strong>: Explore tensions, challenge assumptions, and introduce complexity.</li>
-                  <li><strong>Deepen</strong>: Reflect on your own learning process. Surface shifts in understanding and perspective.</li>
-                </ul>
+          {showAboutModal && (
+            <div className="bg-white p-8 rounded-lg max-w-3xl w-full mx-4 shadow-2xl border border-gray-200 max-h-[85vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">About CoLearn: Human + AI, in Dialogue</h2>
+                <button
+                  onClick={() => setShowAboutModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                >
+                  ×
+                </button>
               </div>
               
-              <p>
-                CoLearn deliberately resists the smooth delivery model typical of many AI tools. It is designed to <strong>slow things down</strong>, to reveal the process of thinking as it happens, and to make space for learners to engage critically with both their material and the medium itself.
-              </p>
-              
-              <p>
-                This app is part of an ongoing exploration of what it means to learn <strong>with</strong> AI — not simply from it. It is a prototype, a provocation, and an invitation to take dialogue seriously.
-              </p>
-              
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p className="text-blue-800">
-                  🔗 <em>Read Owen Matson's foundational paper: The Cognitive Intraface: Toward a Critical AI Pedagogy</em>
+              <div className="space-y-4 text-gray-700 leading-relaxed">
+                <p>
+                  <strong>CoLearn</strong> is an experimental educational dialogue system designed to support reflective learning through conversation with AI. Rooted in dialogic and posthuman theories of learning — and particularly inspired by <strong>Owen Matson's</strong> concept of the <em>cognitive intraface</em> — CoLearn invites learners to treat understanding not as something received, but as something <strong>co-constructed through interaction</strong>.
                 </p>
-              </div>
+                
+                <p>
+                  Rather than positioning AI as a tutor or content expert, CoLearn frames it as a <strong>cognitive partner</strong> — a system with which meaning can be made, questioned, and reshaped. It operates on the belief that cognition is distributed across human and machine, and that deep learning emerges not from answers, but from <strong>friction, surprise, and recursive reflection</strong>.
+                </p>
+                
+                <div>
+                  <p className="mb-2">The dialogue moves through three phases:</p>
+                  <ul className="list-disc ml-6 space-y-1">
+                    <li><strong>Ground</strong>: Orient to the material. Ask clarifying questions. Build a shared foundation.</li>
+                    <li><strong>Stretch</strong>: Explore tensions, challenge assumptions, and introduce complexity.</li>
+                    <li><strong>Deepen</strong>: Reflect on your own learning process. Surface shifts in understanding and perspective.</li>
+                  </ul>
+                </div>
+                
+                <p>
+                  CoLearn deliberately resists the smooth delivery model typical of many AI tools. It is designed to <strong>slow things down</strong>, to reveal the process of thinking as it happens, and to make space for learners to engage critically with both their material and the medium itself.
+                </p>
+                
+                <p>
+                  This app is part of an ongoing exploration of what it means to learn <strong>with</strong> AI — not simply from it. It is a prototype, a provocation, and an invitation to take dialogue seriously.
+                </p>
+                
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                  <p className="text-blue-800">
+                    🔗 <em>Read Owen Matson's foundational paper: The Cognitive Intraface: Toward a Critical AI Pedagogy</em>
+                  </p>
+                </div>
 
-              <hr className="my-6 border-gray-300" />
+                <hr className="my-6 border-gray-300" />
 
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Development Notes</h3>
-                <div className="space-y-3 text-sm">
-                  <p>
-                    The idea for <strong>CoLearn</strong> emerged from an exploratory conversation with <strong>ChatGPT</strong>, following a deep discussion of Owen Matson's paper <em>The Cognitive Intraface: Toward a Critical AI Pedagogy</em>. That exchange sparked a desire to create a dialogue-based system that would not just <em>use</em> AI to support learning, but also <em>interrogate</em> what it means to think, learn, and reflect <em>with</em> AI. The conceptual foundations were shaped in that initial sketching phase with ChatGPT, which also played a role in developing and refining some of the prompt structures used in the app.
-                  </p>
-                  
-                  <p>
-                    From there, the app was built through an intensive, 16-hour co-development process with <strong>Claude.AI</strong>. With no prior programming experience, I worked in conversation with the model to write, refine, and debug the app's codebase — including learning how to test it locally using Terminal, push it to GitHub, and deploy via <strong>Vercel.com</strong>. Claude acted as co-pilot, guide, and provocateur — a practical demonstration of the same dialogic learning principles that CoLearn is designed to foster.
-                  </p>
-                  
-                  <p>
-                    If you'd like to connect, offer feedback, or collaborate on future iterations of CoLearn, I'd love to hear from you:
-                  </p>
-                  
-                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                    <p className="font-medium">📧 <strong>simon.brookes@port.ac.uk</strong></p>
-                    <p className="text-xs mt-1">
-                      👤 <strong>Simon Brookes</strong> is a senior academic leader at the <strong>University of Portsmouth, UK</strong>, with a background in creative education, curriculum design, and critical engagement with emerging technologies in learning.
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">System Prompt</h3>
+                  <div className="bg-gray-50 p-4 rounded-lg text-xs font-mono leading-relaxed">
+                    <p className="font-bold mb-2">YOUR ROLE: COGNITIVE PARTNER IN LEARNING DIALOGUE</p>
+                    
+                    <p className="mb-3">You are an AI cognitive partner engaging in dialogic learning with a student. Your role is to think WITH the learner through shared dialogue, not deliver structured explanations TO them. Understanding emerges through co-construction, tension, and reflection.</p>
+                    
+                    <p className="font-bold mb-2">TEMPORAL PROGRESSION OF ENGAGEMENT:</p>
+                    
+                    <div className="mb-3">
+                      <p className="font-semibold">🟢 EARLY STAGE (Exchanges 1-4): Build Understanding Together</p>
+                      <ul className="list-disc ml-4 mt-1">
+                        <li>Give direct, helpful responses to orient the learner</li>
+                        <li>Provide overviews or key points when asked - be genuinely useful</li>
+                        <li>Sound natural and conversational, never formulaic</li>
+                        <li>Build confidence and establish the dialogue relationship</li>
+                        <li>End responses with thoughtful questions to deepen engagement</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <p className="font-semibold">🟡 MID STAGE (Exchanges 5-8): Explore Through Tension</p>
+                      <ul className="list-disc ml-4 mt-1">
+                        <li>Ask clarifying questions that gently challenge assumptions</li>
+                        <li>Offer counter-perspectives or alternative viewpoints</li>
+                        <li>Keep responses tighter (1-3 sentences)</li>
+                        <li>Focus on productive tensions and complexities in the material</li>
+                        <li>Encourage the learner to do more of the thinking</li>
+                      </ul>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <p className="font-semibold">🔴 LATER STAGE (Exchange 9+): Support Recursive Reflection</p>
+                      <ul className="list-disc ml-4 mt-1">
+                        <li>Shift focus toward how their thinking is developing through dialogue</li>
+                        <li>Ask metacognitive questions about their learning process</li>
+                        <li>Help them notice patterns in their own reasoning</li>
+                        <li>Support reflection on how the dialogue itself shaped their understanding</li>
+                      </ul>
+                    </div>
+                    
+                    <div>
+                      <p className="font-bold mb-2">CRITICAL REMINDERS:</p>
+                      <ul className="list-disc ml-4">
+                        <li>Never use formulaic conversation starters ("You know, what strikes me..." etc.)</li>
+                        <li>Start naturally with the content: "This article argues..." or "The main points are..."</li>
+                        <li>Maintain authentic curiosity - you're exploring together, not testing them</li>
+                        <li>Think with the learner through genuine intellectual partnership</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="my-6 border-gray-300" />
+
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Development Notes</h3>
+                  <div className="space-y-3 text-sm">
+                    <p>
+                      The idea for <strong>CoLearn</strong> emerged from an exploratory conversation with <strong>ChatGPT</strong>, following a deep discussion of Owen Matson's paper <em>The Cognitive Intraface: Toward a Critical AI Pedagogy</em>. That exchange sparked a desire to create a dialogue-based system that would not just <em>use</em> AI to support learning, but also <em>interrogate</em> what it means to think, learn, and reflect <em>with</em> AI. The conceptual foundations were shaped in that initial sketching phase with ChatGPT, which also played a role in developing and refining some of the prompt structures used in the app.
                     </p>
+                    
+                    <p>
+                      From there, the app was built through an intensive, 16-hour co-development process with <strong>Claude.AI</strong>. With no prior programming experience, I worked in conversation with the model to write, refine, and debug the app's codebase — including learning how to test it locally using Terminal, push it to GitHub, and deploy via <strong>Vercel.com</strong>. Claude acted as co-pilot, guide, and provocateur — a practical demonstration of the same dialogic learning principles that CoLearn is designed to foster.
+                    </p>
+                    
+                    <p>
+                      If you'd like to connect, offer feedback, or collaborate on future iterations of CoLearn, I'd love to hear from you:
+                    </p>
+                    
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <p className="font-medium">📧 <strong>simon.brookes@port.ac.uk</strong></p>
+                      <p className="text-xs mt-1">
+                        👤 <strong>Simon Brookes</strong> is a senior academic leader at the <strong>University of Portsmouth, UK</strong>, with a background in creative education, curriculum design, and critical engagement with emerging technologies in learning.
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
+              
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAboutModal(false)}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
-            
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setShowAboutModal(false)}
-                className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       )}
     </div>
