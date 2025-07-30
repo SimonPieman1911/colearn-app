@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useRef, useEffect, ReactElement } from 'react';
 import * as mammoth from 'mammoth/mammoth.browser';
 import { Send, Pause, Lock, FileText, Brain, User, Bot, Clock, Upload } from 'lucide-react';
