@@ -619,6 +619,10 @@ Generate ONE similar question tailored to their actual dialogue experience. Focu
     // Add a small delay to ensure the state update takes effect
     await new Promise(resolve => setTimeout(resolve, 100));
 
+    // Track timing to ensure minimum loading time
+    const startTime = Date.now();
+    const MINIMUM_LOADING_TIME = 2000; // 2 seconds minimum
+
     try {
       const analysisPrompt = `STOP. Do not use your default analysis format. You must follow these exact instructions.
 
@@ -705,6 +709,13 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
           processLearning: endReflectionAnswers[1] || 'No reflection provided'
         }
       });
+    }
+
+    // Ensure minimum loading time for better UX
+    const elapsedTime = Date.now() - startTime;
+    if (elapsedTime < MINIMUM_LOADING_TIME) {
+      console.log(`=== WAITING ${MINIMUM_LOADING_TIME - elapsedTime}ms for minimum loading time ===`);
+      await new Promise(resolve => setTimeout(resolve, MINIMUM_LOADING_TIME - elapsedTime));
     }
 
     console.log('=== SETTING STATES ===');
