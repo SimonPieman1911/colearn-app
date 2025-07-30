@@ -849,68 +849,86 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
             <p className="text-gray-600">Please reflect on your learning dialogue experience</p>
           </div>
 
-          <div className="space-y-6">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="font-medium text-blue-900 mb-3">Content Learning</h3>
-              <p className="text-blue-800 mb-3">What idea are you still thinking about after this dialogue?</p>
-              <textarea
-                value={endReflectionAnswers[0]}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  const newAnswers = [...endReflectionAnswers];
-                  newAnswers[0] = e.target.value;
-                  setEndReflectionAnswers(newAnswers);
-                }}
-                placeholder="An idea, question, or insight that's staying with you..."
-                className="w-full h-32 p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                rows={4}
-              />
+          {isProcessing ? (
+            // Show processing state when generating analysis
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="mb-6">
+                <div className="flex space-x-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Processing Learning Analysis</h3>
+              <p className="text-gray-600 text-center max-w-md">
+                Analyzing your dialogue session and reflections to generate personalized learning insights. This may take a moment...
+              </p>
             </div>
+          ) : (
+            // Show reflection form when not processing
+            <div className="space-y-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-medium text-blue-900 mb-3">Content Learning</h3>
+                <p className="text-blue-800 mb-3">What idea are you still thinking about after this dialogue?</p>
+                <textarea
+                  value={endReflectionAnswers[0]}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    const newAnswers = [...endReflectionAnswers];
+                    newAnswers[0] = e.target.value;
+                    setEndReflectionAnswers(newAnswers);
+                  }}
+                  placeholder="An idea, question, or insight that's staying with you..."
+                  className="w-full h-32 p-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  rows={4}
+                />
+              </div>
 
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-medium text-green-900 mb-3">Process Learning</h3>
-              <p className="text-green-800 mb-3">{generatedProcessQuestion}</p>
-              <textarea
-                value={endReflectionAnswers[1]}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                  const newAnswers = [...endReflectionAnswers];
-                  newAnswers[1] = e.target.value;
-                  setEndReflectionAnswers(newAnswers);
-                }}
-                placeholder="Your reflection on the learning process..."
-                className="w-full h-32 p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                rows={4}
-              />
-            </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <h3 className="font-medium text-green-900 mb-3">Process Learning</h3>
+                <p className="text-green-800 mb-3">{generatedProcessQuestion}</p>
+                <textarea
+                  value={endReflectionAnswers[1]}
+                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                    const newAnswers = [...endReflectionAnswers];
+                    newAnswers[1] = e.target.value;
+                    setEndReflectionAnswers(newAnswers);
+                  }}
+                  placeholder="Your reflection on the learning process..."
+                  className="w-full h-32 p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  rows={4}
+                />
+              </div>
 
-            <div className="flex gap-4">
-              <button
-                onClick={() => {
-                  setShowEndReflection(false);
-                  setEndReflectionAnswers(['', '']);
-                  handleEndReflectionSubmit();
-                }}
-                className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors"
-              >
-                Skip Reflection
-              </button>
-              <button
-                onClick={handleEndReflectionSubmit}
-                disabled={isProcessing}
-                className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                {isProcessing ? 'Generating Analysis...' : 'Get Learning Analysis'}
-              </button>
-            </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={() => {
+                    setShowEndReflection(false);
+                    setEndReflectionAnswers(['', '']);
+                    handleEndReflectionSubmit();
+                  }}
+                  className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors"
+                >
+                  Skip Reflection
+                </button>
+                <button
+                  onClick={handleEndReflectionSubmit}
+                  disabled={isProcessing}
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  Get Learning Analysis
+                </button>
+              </div>
 
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => setShowAboutModal(true)}
-                className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
-              >
-                What Is CoLearn?
-              </button>
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowAboutModal(true)}
+                  className="text-gray-500 hover:text-gray-700 text-sm underline transition-colors"
+                >
+                  What Is CoLearn?
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
