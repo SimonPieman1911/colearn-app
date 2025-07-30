@@ -1241,7 +1241,7 @@ Educational dialogue platform for reflective learning
         </div>
       )}
 
-      {showReflectionModal && (
+      {(showReflectionModal || showAboutModal) && (
         <div className="fixed inset-0 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}>
           <div className="bg-white p-6 rounded-lg max-w-md w-full mx-4 shadow-2xl border border-gray-200">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Reflection Prompt</h3>
@@ -1317,6 +1317,32 @@ Educational dialogue platform for reflective learning
                 <p className="text-blue-800">
                   🔗 <em>Read Owen Matson's foundational paper: The Cognitive Intraface: Toward a Critical AI Pedagogy</em>
                 </p>
+              </div>
+
+              <hr className="my-6 border-gray-300" />
+
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Development Notes</h3>
+                <div className="space-y-3 text-sm">
+                  <p>
+                    The idea for <strong>CoLearn</strong> emerged from an exploratory conversation with <strong>ChatGPT</strong>, following a deep discussion of Owen Matson's paper <em>The Cognitive Intraface: Toward a Critical AI Pedagogy</em>. That exchange sparked a desire to create a dialogue-based system that would not just <em>use</em> AI to support learning, but also <em>interrogate</em> what it means to think, learn, and reflect <em>with</em> AI. The conceptual foundations were shaped in that initial sketching phase with ChatGPT, which also played a role in developing and refining some of the prompt structures used in the app.
+                  </p>
+                  
+                  <p>
+                    From there, the app was built through an intensive, 16-hour co-development process with <strong>Claude.AI</strong>. With no prior programming experience, I worked in conversation with the model to write, refine, and debug the app's codebase — including learning how to test it locally using Terminal, push it to GitHub, and deploy via <strong>Vercel.com</strong>. Claude acted as co-pilot, guide, and provocateur — a practical demonstration of the same dialogic learning principles that CoLearn is designed to foster.
+                  </p>
+                  
+                  <p>
+                    If you'd like to connect, offer feedback, or collaborate on future iterations of CoLearn, I'd love to hear from you:
+                  </p>
+                  
+                  <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                    <p className="font-medium">📧 <strong>simon.brookes@port.ac.uk</strong></p>
+                    <p className="text-xs mt-1">
+                      👤 <strong>Simon Brookes</strong> is a senior academic leader at the <strong>University of Portsmouth, UK</strong>, with a background in creative education, curriculum design, and critical engagement with emerging technologies in learning.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             
