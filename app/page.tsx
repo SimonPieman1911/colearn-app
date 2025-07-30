@@ -132,6 +132,13 @@ export default function CoLearnInterface() {
     const visibleText = sourceText.trim();
     const hiddenText = hiddenDocumentContent.trim();
     
+    // Debug logging
+    console.log('getSourceMaterial called:');
+    console.log('- visibleText length:', visibleText.length);
+    console.log('- hiddenText length:', hiddenText.length);
+    console.log('- visibleText starts with:', visibleText.substring(0, 50));
+    console.log('- hiddenText starts with:', hiddenText.substring(0, 50));
+    
     if (hiddenText && !visibleText.startsWith('✅') && !visibleText.startsWith('📄')) {
       // Both document upload and pasted text
       return `UPLOADED DOCUMENT CONTENT:\n${hiddenText}\n\nADDITIONAL CONTEXT PROVIDED BY USER:\n${visibleText}`;
@@ -155,6 +162,19 @@ export default function CoLearnInterface() {
         (window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         resolve();
       };
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  };
+
+  // Load Mammoth.js library dynamically for Word documents
+  const loadMammoth = async (): Promise<void> => {
+    if ((window as any).mammoth) return;
+    
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js';
+      script.onload = () => resolve();
       script.onerror = reject;
       document.head.appendChild(script);
     });
@@ -204,15 +224,24 @@ export default function CoLearnInterface() {
       } else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
         // Handle Word documents
         try {
-          if ((window as any).mammoth) {
-            const result = await (window as any).mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()});
-            extractedContent = result.value;
-          } else {
-            extractedContent = `[Word Document: ${file.name} - Content extraction not available. Please copy and paste the text manually if needed.]`;
+          // Load Mammoth.js if not already loaded
+          if (!(window as any).mammoth) {
+            await loadMammoth();
           }
+
+          const arrayBuffer = await file.arrayBuffer();
+          const result = await (window as any).mammoth.extractRawText({arrayBuffer: arrayBuffer});
+          extractedContent = result.value;
+
+          // Check if we actually got content
+          if (!extractedContent || extractedContent.trim().length === 0) {
+            console.warn('Word document appears to be empty or unreadable');
+            extractedContent = `[Word Document: ${file.name} - Document appears to be empty or content could not be extracted. Please copy and paste the text manually.]`;
+          }
+
         } catch (wordError) {
           console.error('Word extraction failed:', wordError);
-          extractedContent = `[Word Document: ${file.name} - Content extraction failed. Please copy and paste the text manually if needed.]`;
+          extractedContent = `[Word Document: ${file.name} - Content extraction failed (${wordError.message}). Please copy and paste the text manually.]`;
         }
         
       } else if (fileType.startsWith('text/') || fileName.endsWith('.txt') || fileName.endsWith('.md')) {
@@ -227,6 +256,10 @@ export default function CoLearnInterface() {
       setHiddenDocumentContent(extractedContent);
       
       // Show success message to user (they don't see the content)
+      // But let's also log the content length for debugging
+      console.log(`Extracted content length: ${extractedContent.length} characters`);
+      console.log(`First 200 characters: ${extractedContent.substring(0, 200)}`);
+      
       setSourceText(`✅ Document uploaded successfully: ${file.name}
 
 Your document has been processed and is ready for the AI to analyze. You can now set your focus question below and start your learning dialogue.
