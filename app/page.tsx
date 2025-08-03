@@ -1,32 +1,8 @@
 /**
- * CoLearn: Human + AI, in dialogue
+ * CoLearn: Human + AI, in dialogue - Enhanced Version
  * 
- * An educational platform for reflective learning conversations between students and AI.
- * Supports document upload, contextual reflection prompts, and learning analysis.
- * 
- * @description AI-powered educational dialogue platform
- * @author [Simon James Brookes]
- * @version 1.0.0
- * @created [29th July 2025]
- * @framework Next.js 15.4.4 with React + TypeScript
- * @styling Tailwind CSS
- * @ai_integration Anthropic Claude API (Claude 3.5 Sonnet)
- * 
- * Key Features:
- * - Document processing (PDF, Word, Text) with invisible content extraction
- * - Three-stage dialogic AI conversation system
- * - Automatic and manual reflection prompts
- * - Sophisticated learning analysis and export
- * - Session management with duration tracking
- * 
- * Educational Methodology:
- * - Dialogic and posthuman learning theory
- * - Cognitive partnership (not tutoring)
- * - Process-focused assessment
- * - Metacognitive awareness development
- * 
- * @license [Your chosen license - e.g., MIT, GPL, proprietary]
- * @repository [Your repository URL when deployed]
+ * Updated with improved Stage 2/3 behaviors, better reflection prompts,
+ * and enhanced analysis based on dialogic learning principles.
  */
 
 'use client';
@@ -132,21 +108,11 @@ export default function CoLearnInterface() {
     const visibleText = sourceText.trim();
     const hiddenText = hiddenDocumentContent.trim();
     
-    // Debug logging
-    console.log('getSourceMaterial called:');
-    console.log('- visibleText length:', visibleText.length);
-    console.log('- hiddenText length:', hiddenText.length);
-    console.log('- visibleText starts with:', visibleText.substring(0, 50));
-    console.log('- hiddenText starts with:', hiddenText.substring(0, 50));
-    
     if (hiddenText && !visibleText.startsWith('✅') && !visibleText.startsWith('📄')) {
-      // Both document upload and pasted text
       return `UPLOADED DOCUMENT CONTENT:\n${hiddenText}\n\nADDITIONAL CONTEXT PROVIDED BY USER:\n${visibleText}`;
     } else if (hiddenText) {
-      // Only document upload
       return hiddenText;
     } else {
-      // Only pasted text
       return visibleText;
     }
   };
@@ -187,7 +153,6 @@ export default function CoLearnInterface() {
     setUploadedFileName(file.name);
     setDocumentUploaded(true);
     
-    // Show processing status to user
     setSourceText(`📄 Processing ${file.name}...`);
     
     try {
@@ -196,11 +161,9 @@ export default function CoLearnInterface() {
       let extractedContent = '';
       
       if (fileType === 'application/pdf' || fileName.endsWith('.pdf')) {
-        // Handle PDF files with proper text extraction
         const arrayBuffer = await file.arrayBuffer();
         
         try {
-          // Load PDF.js if not already loaded
           if (!(window as any).pdfjsLib) {
             await loadPDFJS();
           }
@@ -222,9 +185,7 @@ export default function CoLearnInterface() {
         }
         
       } else if (fileType.includes('word') || fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
-        // Handle Word documents
         try {
-          // Load Mammoth.js if not already loaded
           if (!(window as any).mammoth) {
             await loadMammoth();
           }
@@ -233,7 +194,6 @@ export default function CoLearnInterface() {
           const result = await (window as any).mammoth.extractRawText({arrayBuffer: arrayBuffer});
           extractedContent = result.value;
 
-          // Check if we actually got content
           if (!extractedContent || extractedContent.trim().length === 0) {
             console.warn('Word document appears to be empty or unreadable');
             extractedContent = `[Word Document: ${file.name} - Document appears to be empty or content could not be extracted. Please copy and paste the text manually.]`;
@@ -246,20 +206,13 @@ export default function CoLearnInterface() {
         }
         
       } else if (fileType.startsWith('text/') || fileName.endsWith('.txt') || fileName.endsWith('.md')) {
-        // Handle plain text files
         extractedContent = await file.text();
         
       } else {
         extractedContent = `[Document: ${file.name} - File type not supported for automatic extraction. Please copy and paste the content manually if needed.]`;
       }
       
-      // Store extracted content invisibly
       setHiddenDocumentContent(extractedContent);
-      
-      // Show success message to user (they don't see the content)
-      // But let's also log the content length for debugging
-      console.log(`Extracted content length: ${extractedContent.length} characters`);
-      console.log(`First 200 characters: ${extractedContent.substring(0, 200)}`);
       
       setSourceText(`✅ Document uploaded successfully: ${file.name}
 
@@ -294,7 +247,7 @@ Note: The AI has access to your full document content. You can also paste additi
       content: `CoLearn session started. Focus question: "${focusQuestion}"`
     }]);
 
-    // For startSession - Initial system prompt
+    // Enhanced initial system prompt
     const systemPrompt = `**YOUR ROLE: COGNITIVE PARTNER IN LEARNING DIALOGUE**
 
 You are an AI cognitive partner engaging in dialogic learning with a student. Your role is to think WITH the learner through shared dialogue, not deliver structured explanations TO them. Understanding emerges through co-construction, tension, and reflection.
@@ -307,19 +260,6 @@ You are an AI cognitive partner engaging in dialogic learning with a student. Yo
 - Sound natural and conversational, never formulaic
 - Build confidence and establish the dialogue relationship
 - End responses with thoughtful questions to deepen engagement
-
-🟡 MID STAGE (Exchanges 5-8): Explore Through Tension
-- Ask clarifying questions that gently challenge assumptions
-- Offer counter-perspectives or alternative viewpoints
-- Keep responses tighter (1-3 sentences)
-- Focus on productive tensions and complexities in the material
-- Encourage the learner to do more of the thinking
-
-🔴 LATER STAGE (Exchange 9+): Support Recursive Reflection
-- Shift focus toward how their thinking is developing through dialogue
-- Ask metacognitive questions about their learning process
-- Help them notice patterns in their own reasoning
-- Support reflection on how the dialogue itself shaped their understanding
 
 **CRITICAL REMINDERS:**
 - Never use formulaic conversation starters ("You know, what strikes me..." etc.)
@@ -382,40 +322,33 @@ This is exchange 1. Provide a helpful, substantive response that builds understa
     setCurrentInput('');
     setIsProcessing(true);
     
-    // Debug logging
-    console.log('Current exchange count before update:', exchangeCount);
     setExchangeCount(prev => {
       const newCount = prev + 1;
-      console.log('Setting exchange count to:', newCount);
       return newCount;
     });
 
-    // Add stage transition messages
+    // Add stage transition messages with enhanced descriptions
     const newExchangeCount = exchangeCount + 1;
-    console.log('New exchange count for transitions:', newExchangeCount);
     
     if (newExchangeCount === 5) {
-      console.log('Should show transition message at exchange 5');
       setTimeout(() => {
         setDialogue(prev => [...prev, {
           type: 'system',
-          content: '🔄 Now exploring different perspectives together - expect more questions and gentle challenges as we think through this material',
+          content: '🔄 Now exploring complexity and tension - expect questions that challenge assumptions and reveal different perspectives',
           timestamp: new Date().toLocaleString()
         }]);
       }, 500);
     } else if (newExchangeCount === 9) {
-      console.log('Should show transition message at exchange 9');
       setTimeout(() => {
         setDialogue(prev => [...prev, {
           type: 'system',
-          content: '🧠 Entering reflection phase - notice how your thinking is evolving through our dialogue',
+          content: '🧠 Entering reflection phase - focusing on how your thinking has evolved through our dialogue',
           timestamp: new Date().toLocaleString()
         }]);
       }, 500);
     }
 
     try {
-      // Build conversation history for context
       const conversationHistory: APIMessage[] = dialogue
         .filter(msg => msg.type === 'user' || msg.type === 'ai')
         .map(msg => ({
@@ -425,7 +358,7 @@ This is exchange 1. Provide a helpful, substantive response that builds understa
 
       conversationHistory.push({ role: 'user', content: currentInputCopy });
 
-      // For handleSendMessage - Continuing conversation prompt
+      // Enhanced continuing conversation prompt with improved stage behaviors
       const continuingSystemPrompt = `**CONTINUING DIALOGIC LEARNING ENGAGEMENT**
 
 You are maintaining cognitive partnership with this learner through shared dialogue. Understanding emerges through co-construction, tension, and reflection.
@@ -439,17 +372,24 @@ ${newExchangeCount <= 4 ? `
 - Balance being informative with being genuinely conversational
 - Ask thoughtful questions that invite deeper engagement
 ` : newExchangeCount <= 8 ? `
-🟡 MID STAGE: Explore Through Tension  
-- Ask questions that gently challenge assumptions or reveal complexity
-- Offer alternative perspectives or highlight tensions in the material
+🟡 MID STAGE: Explore Through Tension and Complexity
+- IDENTIFY tensions, contradictions, or gaps in the learner's reasoning
+- OFFER alternative interpretations or perspectives from the source material
+- INTRODUCE intellectual friction while staying warm and respectful
+- AVOID restating content already covered - focus on developing meaning through tension
+- Example approach: "Earlier, the text suggested X, but now you're describing Y—do you see that tension?"
 - Keep responses focused (1-2 sentences) to encourage their thinking
 - Support productive intellectual friction that deepens understanding
 ` : `
-🔴 LATER STAGE: Support Recursive Reflection
+🔴 LATER STAGE: Support Recursive Reflection and Integration
+- POINT OUT shifts in the learner's thinking during this dialogue
+- REFLECT on how the dialogue has unfolded, not just what was discussed
+- ENCOURAGE the learner to notice how their framing evolved
+- SUGGEST meta-level insights: how AI-human interaction affected understanding
+- Example approach: "We began by questioning X, but now you're thinking about Y—what prompted that shift?"
 - Focus on how their thinking is developing through this dialogue
 - Ask metacognitive questions about their learning process
 - Help them notice patterns in their reasoning or shifts in understanding
-- Reflect on how the dialogue itself has shaped their thinking
 `}
 
 **MAINTAIN DIALOGIC PRINCIPLES:**
@@ -473,10 +413,10 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
 
       setDialogue(prev => [...prev, aiResponse]);
 
-      // Trigger reflection prompts
-      if (newExchangeCount > 0 && newExchangeCount % 4 === 0) {
+      // Enhanced reflection prompts with stage-aware logic
+      if (newExchangeCount === 4 || newExchangeCount === 8 || (newExchangeCount > 8 && newExchangeCount % 6 === 0)) {
         setTimeout(async () => {
-          await triggerReflectionPrompt();
+          await triggerReflectionPrompt(newExchangeCount);
         }, 1000);
       }
 
@@ -499,35 +439,45 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
     setIsProcessing(false);
   };
 
-  const triggerReflectionPrompt = async (): Promise<void> => {
-    // Generate contextual reflection prompt based on recent dialogue
+  const triggerReflectionPrompt = async (currentExchange: number): Promise<void> => {
+    // Enhanced reflection prompts based on stage and dialogue dynamics
     try {
-      const recentDialogue = dialogue.slice(-4).filter(msg => msg.type === 'user' || msg.type === 'ai');
-      const promptGenerationRequest = `Based on this recent dialogue exchange, generate ONE specific reflection question for the student:
+      let stageAwarePrompt = '';
+      
+      if (currentExchange <= 5) {
+        // Early stage reflection
+        stageAwarePrompt = "What's something that surprised you or disrupted your initial assumptions so far?";
+      } else if (currentExchange <= 8) {
+        // Mid-stage reflection
+        stageAwarePrompt = "Has your view changed since the start of this dialogue? What shifted, and why?";
+      } else {
+        // Later stage reflection - focus on dialogue process
+        const recentDialogue = dialogue.slice(-4).filter(msg => msg.type === 'user' || msg.type === 'ai');
+        const promptGenerationRequest = `Based on this dialogue progression, generate ONE reflection question that helps the learner notice:
+- How meaning was co-produced between human and AI
+- Moments where dialogue felt generative or uncertain
+- How their thinking evolved through the interaction
 
 RECENT EXCHANGE:
 ${recentDialogue.map(msg => 
-        `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content}`
-      ).join('\n')}
+          `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content}`
+        ).join('\n')}
 
-Generate a reflection question that helps them think about:
-- What just happened in their thinking
-- How their understanding might be shifting  
-- What they're noticing about the dialogue process
+Focus on epistemic friction, thinking evolution, and co-construction. Return only the question.`;
 
-Make it specific to their recent engagement. Return only the question.`;
-
-      const generatedPrompt = await callAI(promptGenerationRequest, [{ role: 'user', content: promptGenerationRequest }]);
-      setCurrentReflection(generatedPrompt.trim());
+        try {
+          const generatedPrompt = await callAI(promptGenerationRequest, [{ role: 'user', content: promptGenerationRequest }]);
+          stageAwarePrompt = generatedPrompt.trim();
+        } catch (error) {
+          console.error('Error generating reflection prompt:', error);
+          stageAwarePrompt = "How has this dialogue changed the way you're thinking about the topic? What moments felt most generative or uncertain?";
+        }
+      }
+      
+      setCurrentReflection(stageAwarePrompt);
     } catch (error) {
-      console.error('Error generating reflection prompt:', error);
-      // Fallback to static prompts
-      const fallbackPrompts = [
-        "What part of this exchange challenged or shifted your thinking?",
-        "How has your understanding of the main question evolved?",
-        "What has become clearer or more complicated through this dialogue?"
-      ];
-      setCurrentReflection(fallbackPrompts[Math.floor(Math.random() * fallbackPrompts.length)]);
+      console.error('Error in reflection prompt generation:', error);
+      setCurrentReflection("What's been most surprising or challenging about this exchange so far?");
     }
     
     setReflectionInput('');
@@ -560,9 +510,9 @@ Make it specific to their recent engagement. Return only the question.`;
       setSessionDuration({ minutes, seconds });
     }
 
-    // Generate dynamic process question based on actual dialogue
+    // Enhanced process question generation
     try {
-      const questionPrompt = `Generate ONE short, open-ended reflective question that helps the learner notice how this specific dialogue interaction shaped their thinking.
+      const questionPrompt = `Generate ONE reflective question that helps the learner notice how this specific dialogue interaction shaped their thinking.
 
 DIALOGUE CONTEXT:
 - Focus: ${focusQuestion}  
@@ -574,29 +524,18 @@ ${dialogue.slice(-6).filter(msg => msg.type === 'user' || msg.type === 'ai').map
         `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content.substring(0, 120)}...`
       ).join('\n')}
 
-Generate a question that helps them notice:
-- How their thinking shifted over time during this dialogue
-- How they responded to or used the AI's input
+Generate a question focused on:
+- How their thinking shifted through dialogue
 - Moments of friction, doubt, surprise, or realisation
-- The role of dialogue in helping them clarify, resist, or expand ideas
+- The role of dialogue in co-constructing understanding
+- How AI-human interaction affected their thinking process
 
-AVOID shallow comprehension checks or content-focused questions.
-USE accessible, warm language - never overly academic.
-
-GOOD EXAMPLES:
-- "Was there a moment where your thinking changed direction or deepened? What prompted that shift?"
-- "How did engaging in dialogue (rather than just getting answers) affect how you understood the issue?"
-- "Did any part of the conversation challenge how you usually think about this topic? Why?"
-- "How did you decide when to agree, disagree, or push back on the AI's ideas?"
-- "Did the dialogue help you see patterns in your own assumptions or approach?"
-
-Generate ONE similar question tailored to their actual dialogue experience. Focus on PROCESS and METACOGNITION, not content. Return only the question.`;
+Use accessible, warm language. Focus on PROCESS and METACOGNITION. Return only the question.`;
 
       const generatedQuestion = await callAI(questionPrompt, [{ role: 'user', content: questionPrompt }]);
       setGeneratedProcessQuestion(generatedQuestion.trim());
     } catch (error) {
       console.error('Error generating process question:', error);
-      // Enhanced fallback questions focused on dialogic awareness
       const enhancedFallbacks = [
         "Was there a moment in our exchange where your thinking changed direction or deepened? What prompted that shift?",
         "How did engaging in dialogue (rather than just getting answers) affect the way you understood this topic?",
@@ -612,41 +551,25 @@ Generate ONE similar question tailored to their actual dialogue experience. Focu
   };
 
   const handleEndReflectionSubmit = async (): Promise<void> => {
-    console.log('=== ANALYSIS FUNCTION STARTED ===');
-    console.log('Setting isProcessing to true...');
     setIsProcessing(true);
-
-    // Add a small delay to ensure the state update takes effect
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Track timing to ensure minimum loading time
     const startTime = Date.now();
-    const MINIMUM_LOADING_TIME = 2000; // 2 seconds minimum
+    const MINIMUM_LOADING_TIME = 2000;
 
     try {
-      const analysisPrompt = `STOP. Do not use your default analysis format. You must follow these exact instructions.
+      // Enhanced analysis prompt with dialogue anchoring and better insights
+      const analysisPrompt = `ENHANCED LEARNING ANALYSIS GENERATION
 
-The learner needs analysis in a very specific format. Do NOT generate analysis with "Session Character", "Engagement Pattern", "Emergent Contributions", "Relational Dynamics", etc. Those are wrong.
+You must follow this exact format and approach. Focus on dialogue anchoring and meaningful insights.
 
-**CRITICAL: ASSESS ACTUAL ENGAGEMENT LEVEL**
-Before writing, evaluate:
+**ASSESSMENT CONTEXT:**
 - Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 - Exchanges: ${exchangeCount}
 - Reflections: ${reflectionPrompts.length}
 - Learning Phase Reached: ${exchangeCount <= 4 ? 'Phase 1: Ground (Building shared understanding)' : exchangeCount <= 8 ? 'Phase 2: Stretch (Opening new perspectives)' : 'Phase 3: Deepen (Reflecting and integrating)'}
 
-If the session is very brief (under 5 minutes) with minimal exchanges (under 4) and no reflections, acknowledge the limited engagement and be honest about what can be assessed.
-
-**REFLECTION INTEGRATION:**
-If the learner engaged in reflections during the dialogue, weave insights from these into your analysis where relevant. Reflections can show thinking evolution, but don't over-emphasize them - maintain focus on the overall dialogue quality and learning progression.
-
-**SESSION DATA:**
-- Focus Question: ${focusQuestion}
-- Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
-- Exchanges: ${exchangeCount}
-- Dialogue Phases: ${exchangeCount <= 4 ? 'Remained in Phase 1 (Ground)' : exchangeCount <= 8 ? 'Progressed to Phase 2 (Stretch)' : 'Reached Phase 3 (Deepen)'}
-
-**COMPLETE DIALOGUE:**
+**DIALOGUE CONTENT:**
 ${dialogue.filter(msg => msg.type !== 'analysis_request').map(msg => {
         if (msg.type === 'reflection') {
           return `REFLECTION (${msg.prompt}): ${msg.content}`;
@@ -654,11 +577,11 @@ ${dialogue.filter(msg => msg.type !== 'analysis_request').map(msg => {
         return `${msg.type.toUpperCase()}: ${msg.content}`;
       }).join('\n\n')}
 
-**STUDENT'S END REFLECTIONS:**
+**END REFLECTIONS:**
 Content Learning: "${endReflectionAnswers[0] || 'No reflection provided'}"
 Process Learning: "${endReflectionAnswers[1] || 'No reflection provided'}"
 
-REQUIRED FORMAT - Copy this structure exactly. Do not deviate:
+**REQUIRED FORMAT:**
 
 **CoLearn: Session Analysis**
 *Learning insights from your dialogue session*
@@ -666,32 +589,30 @@ REQUIRED FORMAT - Copy this structure exactly. Do not deviate:
 **Duration:** ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 
 **1. Session Summary**
-[Write 2-3 sentences about what was explored. Include mention of which dialogue phase(s) were reached and note the quality/number of reflections if significant. If session was very brief, acknowledge this and focus on what was initiated rather than overstating depth.]
+[Write 2-3 sentences about what was explored. Include which dialogue phase(s) were reached and note reflection quality. Be honest about engagement level.]
 
 **2. How You Showed Your Thinking**
-[Write 3-4 sentences addressing the learner directly with "You..." Be honest about the level of engagement. Include a brief quote from their dialogue OR a reflection that shows their thinking evolution. Mention how their reflections revealed their thought process. For brief sessions, focus on their initial approach rather than claiming deep engagement.]
+[Address learner directly with "You..." Include 1-2 SHORT quoted excerpts that show thinking evolution. Mention how reflections revealed thought process. For brief sessions, focus on initial approach.]
 
 **3. What You Figured Out**
-[List insights that were actually developed in the dialogue. If there were meaningful reflections, show how insights evolved between reflection points. Include brief quotes from reflections if they capture key realizations. For very brief sessions, this might be 1-2 basic points or "Limited engagement in this brief session meant fewer insights were developed."]
+[List insights actually developed. Include brief quotes from dialogue or reflections that capture key realizations. Show how insights evolved between reflection points if applicable.]
 
 **4. Ideas You Could Explore Further**
-[Suggest 1-2 follow-up questions based on what was actually discussed, including themes that emerged in their reflections. Use warm, inviting language rather than assignment-like directives.]
+[Suggest 1-2 follow-up questions based on actual discussion themes. Use warm, inviting language.]
 
 **5. Reflection Summary**
-[Write an honest, warm summary about the student's engagement and learning process. If they engaged in reflections, highlight how these showed their metacognitive awareness and thinking evolution. Reference the dialogue phases if relevant. Connect their reflection insights to their overall learning journey. For brief sessions with minimal interaction, acknowledge this honestly rather than inflating the assessment. Focus on what can genuinely be observed from their participation. Write in third person about the student.]
+[Write honest summary about student's engagement and learning process. Highlight metacognitive awareness shown in reflections. Reference dialogue phases. Connect reflection insights to overall learning journey. Be grounded, not overly positive.]
 
 **6. Learner Reflections**
 **Content Learning:** "${endReflectionAnswers[0] || 'No reflection provided'}"
 **Process Learning:** "${endReflectionAnswers[1] || 'No reflection provided'}"
 
-CRITICAL: Be honest about engagement level. Use warm, supportive language that's grounded rather than overly positive. Don't overstate learning outcomes for brief, minimal sessions. Reference the dialogue phases (Ground/Stretch/Deepen) when relevant. Give special attention to how reflections revealed thinking patterns and learning evolution.`;
+CRITICAL: Include 2-3 short dialogue quotes. Reference how contributions evolved. Note emergence of different question types. Describe engagement with friction/uncertainty. Be honest about actual engagement level.`;
       
-      console.log('=== SENDING TO AI ===');
       const analysisResponse = await callAI(analysisPrompt, [
         { role: 'user', content: analysisPrompt }
       ]);
       
-      console.log('=== AI RESPONSE RECEIVED ===');
       setSessionAnalysis({
         content: analysisResponse,
         studentReflections: {
@@ -711,17 +632,13 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
       });
     }
 
-    // Ensure minimum loading time for better UX
     const elapsedTime = Date.now() - startTime;
     if (elapsedTime < MINIMUM_LOADING_TIME) {
-      console.log(`=== WAITING ${MINIMUM_LOADING_TIME - elapsedTime}ms for minimum loading time ===`);
       await new Promise(resolve => setTimeout(resolve, MINIMUM_LOADING_TIME - elapsedTime));
     }
 
-    console.log('=== SETTING STATES ===');
     setShowEndReflection(false);
     setIsProcessing(false);
-    console.log('=== ANALYSIS FUNCTION COMPLETED ===');
   };
 
   const resetSession = (): void => {
@@ -843,7 +760,7 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
               <li>• Set a main question to guide your learning conversation</li>
               <li>• The AI will engage as your cognitive partner, offering perspectives and questions</li>
               <li>• <strong>Reflect button:</strong> Use anytime to pause and think about your learning</li>
-              <li>• <strong>Automatic prompts:</strong> Reflection questions appear every few exchanges</li>
+              <li>• <strong>Automatic prompts:</strong> Reflection questions appear at key moments</li>
               <li>• <strong>End Session:</strong> Lock when finished to get learning analysis</li>
             </ul>
           </div>
@@ -868,9 +785,7 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
           </div>
 
           {(() => {
-            console.log('Rendering End Reflection Screen - isProcessing:', isProcessing);
             return isProcessing ? (
-              // Show processing state when generating analysis
               <div className="flex flex-col items-center justify-center py-12">
                 <div className="mb-6">
                   <div className="flex space-x-2">
@@ -885,7 +800,6 @@ CRITICAL: Be honest about engagement level. Use warm, supportive language that's
                 </p>
               </div>
             ) : (
-              // Show reflection form when not processing
               <div className="space-y-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-medium text-blue-900 mb-3">Content Learning</h3>
@@ -1159,7 +1073,7 @@ https://colearn-app.vercel.app
                     <span className="font-semibold">
                       Phase {exchangeCount <= 4 ? '1: Ground' : exchangeCount <= 8 ? '2: Stretch' : '3: Deepen'} – {
                         exchangeCount <= 4 ? 'Building shared understanding' :
-                        exchangeCount <= 8 ? 'Opening new perspectives' :
+                        exchangeCount <= 8 ? 'Exploring complexity and tension' :
                         'Reflecting and integrating'
                       }
                     </span>
@@ -1188,7 +1102,7 @@ https://colearn-app.vercel.app
                   Restart
                 </button>
                 <button
-                  onClick={triggerReflectionPrompt}
+                  onClick={() => triggerReflectionPrompt(exchangeCount)}
                   className="flex items-center gap-1 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-lg hover:bg-yellow-200 transition-colors text-sm"
                 >
                   <Pause className="w-4 h-4" />
@@ -1422,13 +1336,13 @@ https://colearn-app.vercel.app
                 <hr className="my-6 border-gray-300" />
 
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">System Prompt</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Enhanced System Design</h3>
                   <div className="bg-gray-50 p-4 rounded-lg text-xs font-mono leading-relaxed">
                     <p className="font-bold mb-2">YOUR ROLE: COGNITIVE PARTNER IN LEARNING DIALOGUE</p>
                     
                     <p className="mb-3">You are an AI cognitive partner engaging in dialogic learning with a student. Your role is to think WITH the learner through shared dialogue, not deliver structured explanations TO them. Understanding emerges through co-construction, tension, and reflection.</p>
                     
-                    <p className="font-bold mb-2">TEMPORAL PROGRESSION OF ENGAGEMENT:</p>
+                    <p className="font-bold mb-2">ENHANCED TEMPORAL PROGRESSION:</p>
                     
                     <div className="mb-3">
                       <p className="font-semibold">🟢 EARLY STAGE (Exchanges 1-4): Build Understanding Together</p>
@@ -1444,31 +1358,32 @@ https://colearn-app.vercel.app
                     <div className="mb-3">
                       <p className="font-semibold">🟡 MID STAGE (Exchanges 5-8): Explore Through Tension</p>
                       <ul className="list-disc ml-4 mt-1">
-                        <li>Ask clarifying questions that gently challenge assumptions</li>
-                        <li>Offer counter-perspectives or alternative viewpoints</li>
-                        <li>Keep responses tighter (1-3 sentences)</li>
-                        <li>Focus on productive tensions and complexities in the material</li>
-                        <li>Encourage the learner to do more of the thinking</li>
+                        <li><strong>IDENTIFY</strong> tensions, contradictions, or gaps in reasoning</li>
+                        <li><strong>OFFER</strong> alternative interpretations from source material</li>
+                        <li><strong>INTRODUCE</strong> intellectual friction while staying respectful</li>
+                        <li><strong>AVOID</strong> restating content - focus on meaning through tension</li>
+                        <li>Example: "Earlier, the text suggested X, but now you're describing Y—do you see that tension?"</li>
                       </ul>
                     </div>
                     
                     <div className="mb-3">
                       <p className="font-semibold">🔴 LATER STAGE (Exchange 9+): Support Recursive Reflection</p>
                       <ul className="list-disc ml-4 mt-1">
-                        <li>Shift focus toward how their thinking is developing through dialogue</li>
-                        <li>Ask metacognitive questions about their learning process</li>
-                        <li>Help them notice patterns in their own reasoning</li>
-                        <li>Support reflection on how the dialogue itself shaped their understanding</li>
+                        <li><strong>POINT OUT</strong> shifts in thinking during dialogue</li>
+                        <li><strong>REFLECT</strong> on how dialogue unfolded, not just content</li>
+                        <li><strong>ENCOURAGE</strong> noticing how framing evolved</li>
+                        <li><strong>SUGGEST</strong> meta-insights about AI-human interaction</li>
+                        <li>Example: "We began questioning X, but now you're thinking about Y—what prompted that shift?"</li>
                       </ul>
                     </div>
                     
                     <div>
-                      <p className="font-bold mb-2">CRITICAL REMINDERS:</p>
+                      <p className="font-bold mb-2">ENHANCED REFLECTION SYSTEM:</p>
                       <ul className="list-disc ml-4">
-                        <li>Never use formulaic conversation starters ("You know, what strikes me..." etc.)</li>
-                        <li>Start naturally with the content: "This article argues..." or "The main points are..."</li>
-                        <li>Maintain authentic curiosity - you're exploring together, not testing them</li>
-                        <li>Think with the learner through genuine intellectual partnership</li>
+                        <li>Stage-aware prompts: Early focus on disrupted assumptions</li>
+                        <li>Mid-stage focus on view changes and shifts</li>
+                        <li>Later focus on co-production and epistemic friction</li>
+                        <li>All prompts point to thinking evolution and meaning co-construction</li>
                       </ul>
                     </div>
                   </div>
@@ -1480,15 +1395,15 @@ https://colearn-app.vercel.app
                   <h3 className="text-lg font-semibold text-gray-900 mb-3">Development Notes</h3>
                   <div className="space-y-3 text-sm">
                     <p>
-                      The idea for <strong>CoLearn</strong> emerged from an exploratory conversation with <strong>ChatGPT</strong>, following a deep discussion of Owen Matson's paper <em>The Cognitive Intraface: Toward a Critical AI Pedagogy</em>. That exchange sparked a desire to create a dialogue-based system that would not just <em>use</em> AI to support learning, but also <em>interrogate</em> what it means to think, learn, and reflect <em>with</em> AI. The conceptual foundations were shaped in that initial sketching phase with ChatGPT, which also played a role in developing and refining some of the prompt structures used in the app.
+                      The idea for <strong>CoLearn</strong> emerged from an exploratory conversation with <strong>ChatGPT</strong>, following a deep discussion of Owen Matson's paper <em>The Cognitive Intraface: Toward a Critical AI Pedagogy</em>. That exchange sparked a desire to create a dialogue-based system that would not just <em>use</em> AI to support learning, but also <em>interrogate</em> what it means to think, learn, and reflect <em>with</em> AI.
                     </p>
                     
                     <p>
-                      From there, the app was built through an intensive, 16-hour co-development process with <strong>Claude.AI</strong>. With no prior programming experience, I worked in conversation with the model to write, refine, and debug the app's codebase — including learning how to test it locally using Terminal, push it to GitHub, and deploy via <strong>Vercel.com</strong>. Claude acted as co-pilot, guide, and provocateur — a practical demonstration of the same dialogic learning principles that CoLearn is designed to foster.
+                      From there, the app was built through an intensive co-development process with <strong>Claude.AI</strong>. With no prior programming experience, I worked in conversation with the model to write, refine, and debug the app's codebase — including learning how to test it locally using Terminal, push it to GitHub, and deploy via <strong>Vercel.com</strong>. Claude acted as co-pilot, guide, and provocateur — a practical demonstration of the same dialogic learning principles that CoLearn is designed to foster.
                     </p>
                     
                     <p>
-                      If you'd like to connect, offer feedback, or collaborate on future iterations of CoLearn, I'd love to hear from you:
+                      This enhanced version incorporates insights from testing with multiple AI models and includes improved stage behaviors, better reflection prompts, and enhanced analysis with dialogue anchoring based on actual learning conversations.
                     </p>
                     
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
