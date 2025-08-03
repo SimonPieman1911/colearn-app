@@ -104,6 +104,8 @@ export default function CoLearnInterface() {
   const [hiddenDocumentContent, setHiddenDocumentContent] = useState<string>('');
   const [documentUploaded, setDocumentUploaded] = useState<boolean>(false);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
+  const [toneDial, setToneDial] = useState<'supportive' | 'balanced' | 'provocative'>('balanced');
+  const [usedReflectionPrompts, setUsedReflectionPrompts] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -116,8 +118,8 @@ export default function CoLearnInterface() {
     scrollToBottom();
   }, [dialogue]);
 
-  // Call our backend API
-  const callAI = async (systemPrompt: string, messages: APIMessage[]): Promise<string> => {
+  // Enhanced AI call with Phase 3 template detection and regeneration
+  const callAI = async (systemPrompt: string, messages: APIMessage[], isPhase3: boolean = false): Promise<string> => {
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -133,13 +135,86 @@ export default function CoLearnInterface() {
       }
       
       const data = await response.json();
-      return data.content;
+      let aiResponse = data.content;
+      
+      // Phase 3 template detection and regeneration
+      if (isPhase3) {
+        const templatedPatterns = [
+          /we moved through all three dialogue phases/i,
+          /you progressed from basic clarification to deeper analysis/i,
+          /moved from concept clarification to deeper analysis/i,
+          /we've progressed through the stages/i,
+          /you've moved from understanding to analysis/i,
+          /we began with basic concepts and moved to/i
+        ];
+        
+        const hasTemplatedLanguage = templatedPatterns.some(pattern => pattern.test(aiResponse));
+        
+        if (hasTemplatedLanguage) {
+          console.log('Detected templated Phase 3 response, regenerating...');
+          // Regenerate with enhanced anti-template instructions
+          const enhancedPrompt = systemPrompt + `
+
+**CRITICAL ANTI-TEMPLATE REMINDER:**
+Your previous response contained generic phase summary language. Regenerate focusing on:
+- SPECIFIC ideas that were introduced or reframed in this dialogue
+- ACTUAL learner inputs where thinking visibly shifted
+- CONCRETE moments of epistemic friction or uncertainty
+- META-LEVEL insights without bland affirmation
+
+Avoid phrases like "moved through phases", "progressed from basic to deeper", or generic summaries.`;
+
+          const retryResponse = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              systemPrompt: enhancedPrompt,
+              messages: messages
+            })
+          });
+          
+          if (retryResponse.ok) {
+            const retryData = await retryResponse.json();
+            aiResponse = retryData.content;
+          }
+        }
+      }
+      
+      return aiResponse;
     } catch (error) {
       console.error('AI call error:', error);
       throw error;
     }
   };
 
+  // Get tone-specific instruction modifiers
+  const getToneModifiers = (): string => {
+    switch (toneDial) {
+      case 'supportive':
+        return `
+**TONE: SUPPORTIVE**
+- Use warm, encouraging language
+- Ask gentle, inviting questions
+- Provide reassurance when introducing challenges
+- Focus on building confidence while exploring ideas`;
+      
+      case 'provocative':
+        return `
+**TONE: PROVOCATIVE**
+- Ask sharp, probing questions
+- Introduce strong epistemic pushback when appropriate
+- Challenge assumptions directly but respectfully
+- Use intellectually stimulating friction to deepen thinking`;
+      
+      default: // balanced
+        return `
+**TONE: BALANCED**
+- Maintain curious, reflective stance
+- Introduce gentle intellectual tension
+- Balance support with thoughtful challenge
+- Stay genuinely inquisitive and collaborative`;
+    }
+  };
   // Get source material for AI (combines visible text and hidden document content)
   const getSourceMaterial = (): string => {
     const visibleText = sourceText.trim();
@@ -284,10 +359,12 @@ Note: The AI has access to your full document content. You can also paste additi
       content: `CoLearn session started. Focus question: "${focusQuestion}"`
     }]);
 
-    // Enhanced initial system prompt
+    // Enhanced initial system prompt with tone modifiers
     const systemPrompt = `**YOUR ROLE: COGNITIVE PARTNER IN LEARNING DIALOGUE**
 
 You are an AI cognitive partner engaging in dialogic learning with a student. Your role is to think WITH the learner through shared dialogue, not deliver structured explanations TO them. Understanding emerges through co-construction, tension, and reflection.
+
+${getToneModifiers()}
 
 **TEMPORAL PROGRESSION OF ENGAGEMENT:**
 
@@ -395,10 +472,12 @@ This is exchange 1. Provide a helpful, substantive response that builds understa
 
       conversationHistory.push({ role: 'user', content: currentInputCopy });
 
-      // Enhanced continuing conversation prompt with improved stage behaviors
+      // Enhanced continuing conversation prompt with improved Phase 3 and tone modifiers
       const continuingSystemPrompt = `**CONTINUING DIALOGIC LEARNING ENGAGEMENT**
 
 You are maintaining cognitive partnership with this learner through shared dialogue. Understanding emerges through co-construction, tension, and reflection.
+
+${getToneModifiers()}
 
 **CURRENT STAGE - Exchange ${newExchangeCount}:**
 
@@ -424,9 +503,19 @@ ${newExchangeCount <= 4 ? `
 - ENCOURAGE the learner to notice how their framing evolved
 - SUGGEST meta-level insights: how AI-human interaction affected understanding
 - Example approach: "We began by questioning X, but now you're thinking about Y—what prompted that shift?"
-- Focus on how their thinking is developing through this dialogue
-- Ask metacognitive questions about their learning process
-- Help them notice patterns in their reasoning or shifts in understanding
+
+**ENHANCED PHASE 3 INSTRUCTIONS:**
+❌ AVOID generic phase summaries such as:
+- "We moved through all three dialogue phases"
+- "You progressed from basic clarification to deeper analysis"
+- "We've covered a lot of ground"
+
+✅ INSTEAD:
+- Refer to SPECIFIC ideas that were introduced or reframed
+- Reference ACTUAL learner inputs where their thinking visibly shifted
+- Highlight moments of epistemic friction, uncertainty, or re-evaluation
+- Focus on meta-level insights without being blandly affirming
+- Draw connections between their current thinking and earlier positions
 `}
 
 **MAINTAIN DIALOGIC PRINCIPLES:**
@@ -440,7 +529,7 @@ ${newExchangeCount <= 4 ? `
 
 Continue the dialogue naturally, maintaining cognitive partnership at the appropriate stage.`;
 
-      const aiResponseText = await callAI(continuingSystemPrompt, conversationHistory);
+      const aiResponseText = await callAI(continuingSystemPrompt, conversationHistory, newExchangeCount >= 9);
       
       const aiResponse: DialogueMessage = {
         type: 'ai',
@@ -476,8 +565,8 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
     setIsProcessing(false);
   };
 
+  // Enhanced reflection prompt generation with anti-repetition safeguards
   const triggerReflectionPrompt = async (currentExchange: number): Promise<void> => {
-    // Enhanced reflection prompts based on stage and dialogue dynamics
     try {
       let stageAwarePrompt = '';
       
@@ -488,29 +577,72 @@ Continue the dialogue naturally, maintaining cognitive partnership at the approp
         // Mid-stage reflection
         stageAwarePrompt = "Has your view changed since the start of this dialogue? What shifted, and why?";
       } else {
-        // Later stage reflection - focus on dialogue process
+        // Later stage reflection - focus on dialogue process with anti-repetition
         const recentDialogue = dialogue.slice(-4).filter(msg => msg.type === 'user' || msg.type === 'ai');
-        const promptGenerationRequest = `Based on this dialogue progression, generate ONE reflection question that helps the learner notice:
+        
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (attempts < maxAttempts) {
+          const promptGenerationRequest = `Generate ONE unique reflection question that helps the learner notice:
 - How meaning was co-produced between human and AI
 - Moments where dialogue felt generative or uncertain
 - How their thinking evolved through the interaction
+- Specific epistemic friction or reframing moments
 
 RECENT EXCHANGE:
 ${recentDialogue.map(msg => 
-          `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content}`
-        ).join('\n')}
+            `${msg.type === 'user' ? 'Student' : 'AI'}: ${msg.content}`
+          ).join('\n')}
+
+AVOID REPEATING these previously used prompts:
+${usedReflectionPrompts.map(prompt => `- "${prompt}"`).join('\n')}
 
 Focus on epistemic friction, thinking evolution, and co-construction. Return only the question.`;
 
-        try {
-          const generatedPrompt = await callAI(promptGenerationRequest, [{ role: 'user', content: promptGenerationRequest }]);
-          stageAwarePrompt = generatedPrompt.trim();
-        } catch (error) {
-          console.error('Error generating reflection prompt:', error);
-          stageAwarePrompt = "How has this dialogue changed the way you're thinking about the topic? What moments felt most generative or uncertain?";
+          try {
+            const generatedPrompt = await callAI(promptGenerationRequest, [{ role: 'user', content: promptGenerationRequest }]);
+            const trimmedPrompt = generatedPrompt.trim();
+            
+            // Check for similarity with used prompts
+            const isSimilar = usedReflectionPrompts.some(usedPrompt => {
+              const similarity = calculateSimilarity(trimmedPrompt.toLowerCase(), usedPrompt.toLowerCase());
+              return similarity > 0.7; // 70% similarity threshold
+            });
+            
+            if (!isSimilar) {
+              stageAwarePrompt = trimmedPrompt;
+              break;
+            }
+            
+            attempts++;
+          } catch (error) {
+            console.error('Error generating reflection prompt:', error);
+            break;
+          }
+        }
+        
+        // Fallback if all attempts failed or were too similar
+        if (!stageAwarePrompt) {
+          const fallbacks = [
+            "How has this dialogue changed the way you're thinking about the topic? What moments felt most generative or uncertain?",
+            "What's been most surprising about how your understanding evolved through this conversation?",
+            "Where did you feel most challenged or uncertain in our exchange, and what emerged from that?",
+            "How did having to articulate your thoughts to the AI change how you thought about the material?",
+            "What patterns do you notice in how your thinking shifted during our dialogue?"
+          ];
+          
+          // Find a fallback that hasn't been used
+          const unusedFallback = fallbacks.find(fallback => 
+            !usedReflectionPrompts.some(used => calculateSimilarity(fallback.toLowerCase(), used.toLowerCase()) > 0.7)
+          );
+          
+          stageAwarePrompt = unusedFallback || fallbacks[0];
         }
       }
       
+      // Add to used prompts
+      setUsedReflectionPrompts(prev => [...prev, stageAwarePrompt]);
       setCurrentReflection(stageAwarePrompt);
     } catch (error) {
       console.error('Error in reflection prompt generation:', error);
@@ -519,6 +651,14 @@ Focus on epistemic friction, thinking evolution, and co-construction. Return onl
     
     setReflectionInput('');
     setShowReflectionModal(true);
+  };
+
+  // Simple similarity calculation for prompt comparison
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const words1 = str1.split(/\s+/);
+    const words2 = str2.split(/\s+/);
+    const commonWords = words1.filter(word => words2.includes(word));
+    return commonWords.length / Math.max(words1.length, words2.length);
   };
 
   const submitReflection = (reflectionText: string): void => {
@@ -595,10 +735,24 @@ Use accessible, warm language. Focus on PROCESS and METACOGNITION. Return only t
     const MINIMUM_LOADING_TIME = 2000;
 
     try {
-      // Enhanced analysis prompt with dialogue anchoring and better insights
+      // Enhanced analysis prompt with specific anti-template instructions and quote requirements
       const analysisPrompt = `ENHANCED LEARNING ANALYSIS GENERATION
 
 You must follow this exact format and approach. Focus on dialogue anchoring and meaningful insights.
+
+**CRITICAL ANTI-TEMPLATE INSTRUCTIONS:**
+❌ AVOID generic framing such as:
+- "You moved from basic concept clarification to deeper analysis"
+- "We moved through all three dialogue phases"
+- "You progressed through the stages"
+- "It really helped" (without interpretation)
+
+✅ INSTEAD:
+- Focus on SPECIFIC inflection points in the learner's dialogue
+- Include 2–3 short QUOTED snippets from actual user turns
+- Clearly distinguish between content learning and process learning
+- Draw on reflections but interpret shallow responses like "It really helped"
+- Reference specific ideas that were introduced or reframed
 
 **ASSESSMENT CONTEXT:**
 - Duration: ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
@@ -626,25 +780,25 @@ Process Learning: "${endReflectionAnswers[1] || 'No reflection provided'}"
 **Duration:** ${sessionDuration ? `${sessionDuration.minutes}m ${sessionDuration.seconds}s` : 'Not calculated'}
 
 **1. Session Summary**
-[Write 2-3 sentences about what was explored. Include which dialogue phase(s) were reached and note reflection quality. Be honest about engagement level.]
+[Write 2-3 sentences about what was explored. Include which dialogue phase(s) were reached and note reflection quality. Be honest about engagement level. MUST include specific topic/concept names from the dialogue.]
 
 **2. How You Showed Your Thinking**
-[Address learner directly with "You..." Include 1-2 SHORT quoted excerpts that show thinking evolution. Mention how reflections revealed thought process. For brief sessions, focus on initial approach.]
+[Address learner directly with "You..." Include 1-2 SHORT quoted excerpts that show thinking evolution. Reference specific moments where thinking shifted. Mention how reflections revealed thought process. For brief sessions, focus on initial approach.]
 
 **3. What You Figured Out**
-[List insights actually developed. Include brief quotes from dialogue or reflections that capture key realizations. Show how insights evolved between reflection points if applicable.]
+[List insights actually developed. Include brief quotes from dialogue or reflections that capture key realizations. Show how insights evolved. Reference specific concepts or ideas that were reframed or developed.]
 
 **4. Ideas You Could Explore Further**
-[Suggest 1-2 follow-up questions based on actual discussion themes. Use warm, inviting language.]
+[Suggest 1-2 follow-up questions based on actual discussion themes and gaps identified. Use warm, inviting language. Reference specific unresolved tensions or emerging questions.]
 
 **5. Reflection Summary**
-[Write honest summary about student's engagement and learning process. Highlight metacognitive awareness shown in reflections. Reference dialogue phases. Connect reflection insights to overall learning journey. Be grounded, not overly positive.]
+[Write honest summary about student's engagement and learning process. Highlight metacognitive awareness shown in reflections. Reference dialogue phases. Connect reflection insights to overall learning journey. Be grounded, not overly positive. If reflections were shallow, interpret them based on dialogue evidence.]
 
 **6. Learner Reflections**
 **Content Learning:** "${endReflectionAnswers[0] || 'No reflection provided'}"
 **Process Learning:** "${endReflectionAnswers[1] || 'No reflection provided'}"
 
-CRITICAL: Include 2-3 short dialogue quotes. Reference how contributions evolved. Note emergence of different question types. Describe engagement with friction/uncertainty. Be honest about actual engagement level.`;
+CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions evolved. Note emergence of different question types. Describe engagement with friction/uncertainty. Be honest about actual engagement level. Interpret shallow reflections using dialogue evidence.`;
       
       const analysisResponse = await callAI(analysisPrompt, [
         { role: 'user', content: analysisPrompt }
@@ -698,6 +852,8 @@ CRITICAL: Include 2-3 short dialogue quotes. Reference how contributions evolved
     setSessionStartTime(null);
     setSessionDuration(null);
     setReflectionInput('');
+    setUsedReflectionPrompts([]);
+    setToneDial('balanced');
   };
 
   // Main component return - all screens with global modals
@@ -778,6 +934,53 @@ CRITICAL: Include 2-3 short dialogue quotes. Reference how contributions evolved
               />
               <p className="text-sm text-gray-500 mt-1">
                 Examples: "How does this theory apply to real situations?" • "What are the main arguments and do I agree?" • "How does this connect to what I already know?"
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <svg className="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                </svg>
+                AI Dialogue Tone
+              </label>
+              <div className="flex gap-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tone"
+                    value="supportive"
+                    checked={toneDial === 'supportive'}
+                    onChange={(e) => setToneDial(e.target.value as 'supportive' | 'balanced' | 'provocative')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Supportive</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tone"
+                    value="balanced"
+                    checked={toneDial === 'balanced'}
+                    onChange={(e) => setToneDial(e.target.value as 'supportive' | 'balanced' | 'provocative')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Balanced</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tone"
+                    value="provocative"
+                    checked={toneDial === 'provocative'}
+                    onChange={(e) => setToneDial(e.target.value as 'supportive' | 'balanced' | 'provocative')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Provocative</span>
+                </label>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Choose how the AI should engage: supportive (encouraging), balanced (curious), or provocative (challenging)
               </p>
             </div>
 
