@@ -1,8 +1,45 @@
 /**
  * CoLearn: Human + AI, in dialogue - Enhanced Version
  * 
- * Updated with improved Stage 2/3 behaviors, better reflection prompts,
- * and enhanced analysis based on dialogic learning principles.
+ * An educational platform for reflective learning conversations between students and AI.
+ * Supports document upload, contextual reflection prompts, and learning analysis.
+ * 
+ * @description AI-powered educational dialogue platform
+ * @author Simon James Brookes
+ * @version 2.0.0 (Enhanced)
+ * @created 29th July 2025
+ * @updated 3rd August 2025
+ * @framework Next.js 15.4.4 with React + TypeScript
+ * @styling Tailwind CSS v4
+ * @ai_integration Anthropic Claude API (Claude 3.5 Sonnet)
+ * 
+ * Key Features:
+ * - Document processing (PDF, Word, Text) with invisible content extraction
+ * - Enhanced three-stage dialogic AI conversation system
+ * - Stage-aware automatic and manual reflection prompts
+ * - Sophisticated learning analysis with dialogue anchoring
+ * - Session management with duration tracking
+ * - Export functionality for complete session reports
+ * 
+ * Educational Methodology:
+ * - Dialogic and posthuman learning theory
+ * - Owen Matson's concept of the "cognitive intraface"
+ * - Cognitive partnership (not tutoring)
+ * - Process-focused assessment with epistemic friction
+ * - Metacognitive awareness development
+ * - Co-construction of understanding through tension and reflection
+ * 
+ * Enhanced Features (v2.0):
+ * - Improved Stage 2 (Stretch) behavior with tension identification
+ * - Enhanced Stage 3 (Deepen) with thinking evolution focus
+ * - Stage-aware reflection prompts
+ * - Analysis with dialogue quote anchoring
+ * - Better metacognitive process observation
+ * 
+ * @license MIT
+ * @repository https://github.com/SimonPieman1911/colearn-app
+ * @deployment https://colearn-app.vercel.app
+ * @contact simon.brookes@port.ac.uk
  */
 
 'use client';
