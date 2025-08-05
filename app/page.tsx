@@ -72,6 +72,7 @@ interface SessionAnalysis {
   studentReflections: {
     contentLearning: string;
     processLearning: string;
+    aiPartnership: string;
   };
 }
 
@@ -96,7 +97,7 @@ export default function CoLearnInterface() {
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [showContinuePrompt, setShowContinuePrompt] = useState<boolean>(false);
   const [showEndReflection, setShowEndReflection] = useState<boolean>(false);
-  const [endReflectionAnswers, setEndReflectionAnswers] = useState<string[]>(['', '']);
+  const [endReflectionAnswers, setEndReflectionAnswers] = useState<string[]>(['', '', '']);
   const [generatedProcessQuestion, setGeneratedProcessQuestion] = useState<string>('');
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   const [sessionDuration, setSessionDuration] = useState<SessionDuration | null>(null);
@@ -771,6 +772,7 @@ ${dialogue.filter(msg => msg.type !== 'analysis_request').map(msg => {
 **END REFLECTIONS:**
 Content Learning: "${endReflectionAnswers[0] || 'No reflection provided'}"
 Process Learning: "${endReflectionAnswers[1] || 'No reflection provided'}"
+AI Partnership: "${endReflectionAnswers[2] || 'No reflection provided'}"
 
 **REQUIRED FORMAT:**
 
@@ -788,15 +790,19 @@ Process Learning: "${endReflectionAnswers[1] || 'No reflection provided'}"
 **3. What You Figured Out**
 [List insights actually developed. Include brief quotes from dialogue or reflections that capture key realizations. Show how insights evolved. Reference specific concepts or ideas that were reframed or developed.]
 
-**4. Ideas You Could Explore Further**
+**4. Human-AI Co-Construction**
+[Analyze the cognitive partnership itself. Identify moments where the dialogue produced insights neither participant brought initially. Note how AI responses opened new cognitive pathways for the learner. Highlight instances where human pushback shaped the conversation productively. Assess the quality of the intellectual collaboration - was it genuine co-thinking or just Q&A? Include specific examples of emergent thinking that arose from the interaction.]
+
+**5. Ideas You Could Explore Further**
 [Suggest 1-2 follow-up questions based on actual discussion themes and gaps identified. Use warm, inviting language. Reference specific unresolved tensions or emerging questions.]
 
-**5. Reflection Summary**
+**6. Reflection Summary**
 [Write honest summary about student's engagement and learning process. Highlight metacognitive awareness shown in reflections. Reference dialogue phases. Connect reflection insights to overall learning journey. Be grounded, not overly positive. If reflections were shallow, interpret them based on dialogue evidence.]
 
-**6. Learner Reflections**
+**7. Learner Reflections**
 **Content Learning:** "${endReflectionAnswers[0] || 'No reflection provided'}"
 **Process Learning:** "${endReflectionAnswers[1] || 'No reflection provided'}"
+**AI Partnership:** "${endReflectionAnswers[2] || 'No reflection provided'}"
 
 CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions evolved. Note emergence of different question types. Describe engagement with friction/uncertainty. Be honest about actual engagement level. Interpret shallow reflections using dialogue evidence.`;
       
@@ -808,7 +814,8 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
         content: analysisResponse,
         studentReflections: {
           contentLearning: endReflectionAnswers[0] || 'No reflection provided',
-          processLearning: endReflectionAnswers[1] || 'No reflection provided'
+          processLearning: endReflectionAnswers[1] || 'No reflection provided',
+          aiPartnership: endReflectionAnswers[2] || 'No reflection provided'
         }
       });
 
@@ -818,7 +825,8 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
         content: "Unable to generate analysis due to technical error. Please try again.",
         studentReflections: {
           contentLearning: endReflectionAnswers[0] || 'No reflection provided',
-          processLearning: endReflectionAnswers[1] || 'No reflection provided'
+          processLearning: endReflectionAnswers[1] || 'No reflection provided',
+          aiPartnership: endReflectionAnswers[2] || 'No reflection provided'
         }
       });
     }
@@ -847,7 +855,7 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
     setFocusQuestion('');
     setShowContinuePrompt(false);
     setShowEndReflection(false);
-    setEndReflectionAnswers(['', '']);
+    setEndReflectionAnswers(['', '', '']);
     setGeneratedProcessQuestion('');
     setSessionStartTime(null);
     setSessionDuration(null);
@@ -1073,11 +1081,27 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
                   />
                 </div>
 
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h3 className="font-medium text-purple-900 mb-3">AI Partnership</h3>
+                  <p className="text-purple-800 mb-3">How did having an AI as a thinking partner affect the way you explored these ideas?</p>
+                  <textarea
+                    value={endReflectionAnswers[2]}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+                      const newAnswers = [...endReflectionAnswers];
+                      newAnswers[2] = e.target.value;
+                      setEndReflectionAnswers(newAnswers);
+                    }}
+                    placeholder="Your reflection on the AI partnership..."
+                    className="w-full h-32 p-3 border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                    rows={4}
+                  />
+                </div>
+
                 <div className="flex gap-4">
                   <button
                     onClick={() => {
                       setShowEndReflection(false);
-                      setEndReflectionAnswers(['', '']);
+                      setEndReflectionAnswers(['', '', '']);
                       handleEndReflectionSubmit();
                     }}
                     className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-400 transition-colors"
@@ -1169,6 +1193,8 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
                     bgColor = 'bg-purple-50'; textColor = 'text-purple-900'; contentColor = 'text-purple-800';
                   } else if (title.includes('What You Figured')) {
                     bgColor = 'bg-orange-50'; textColor = 'text-orange-900'; contentColor = 'text-orange-800';
+                  } else if (title.includes('Human-AI Co-Construction')) {
+                    bgColor = 'bg-indigo-50'; textColor = 'text-indigo-900'; contentColor = 'text-indigo-800';
                   } else if (title.includes('Ideas You Could')) {
                     bgColor = 'bg-yellow-50'; textColor = 'text-yellow-900'; contentColor = 'text-yellow-800';
                   } else if (title.includes('Reflection Summary')) {
@@ -1177,6 +1203,7 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
                     bgColor = 'bg-gray-50'; textColor = 'text-gray-900'; contentColor = 'text-gray-800';
                     content = content.replace(/\*\*(Content Learning:)\*\*/g, '<strong>$1</strong>');
                     content = content.replace(/\*\*(Process Learning:)\*\*/g, '<strong>$1</strong>');
+                    content = content.replace(/\*\*(AI Partnership:)\*\*/g, '<strong>$1</strong>');
                   }
                   
                   results.push(
@@ -1221,6 +1248,10 @@ ${sessionAnalysis.studentReflections.contentLearning}
 Process Learning  
 ----------------
 ${sessionAnalysis.studentReflections.processLearning}
+
+AI Partnership
+--------------
+${sessionAnalysis.studentReflections.aiPartnership}
 
 COMPLETE DIALOGUE TRANSCRIPT
 ============================
