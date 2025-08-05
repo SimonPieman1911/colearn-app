@@ -1358,12 +1358,12 @@ https://colearn-app.vercel.app
                   </div>
                 </div>
                 
-                <div className="inline-block px-3 py-1 rounded-md text-xs font-medium mt-2 ml-4 bg-blue-50 text-blue-700 border border-blue-200">
+                <div className="px-3 py-1 rounded-md text-xs font-medium mt-2 bg-blue-50 text-blue-700 border border-blue-200 inline-block">
                   <div className="flex items-center gap-1">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
                     </svg>
-                    <span className="capitalize">{toneDial}</span> Tone
+                    <span>Active AI Dialogue Tone: <span className="capitalize font-semibold">{toneDial}</span></span>
                   </div>
                 </div>
               </div>
