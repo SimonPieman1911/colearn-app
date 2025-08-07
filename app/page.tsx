@@ -105,6 +105,7 @@ export default function CoLearnInterface() {
   const [hiddenDocumentContent, setHiddenDocumentContent] = useState<string>('');
   const [documentUploaded, setDocumentUploaded] = useState<boolean>(false);
   const [showAboutModal, setShowAboutModal] = useState<boolean>(false);
+  const [toneDial, setToneDial] = useState<'balanced' | 'provocative'>('balanced');
   const [usedReflectionPrompts, setUsedReflectionPrompts] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -118,7 +119,26 @@ export default function CoLearnInterface() {
     scrollToBottom();
   }, [dialogue]);
 
-  // Enhanced AI call with Phase 3 template detection and regeneration
+  // Get tone-specific instruction modifiers
+  const getToneModifiers = (): string => {
+    switch (toneDial) {
+      case 'provocative':
+        return `
+**TONE: PROVOCATIVE**
+- Ask sharp, probing questions
+- Introduce strong epistemic pushback when appropriate
+- Challenge assumptions directly but respectfully
+- Use intellectually stimulating friction to deepen thinking`;
+      
+      default: // balanced
+        return `
+**TONE: BALANCED**
+- Maintain curious, reflective stance
+- Introduce gentle intellectual tension
+- Balance support with thoughtful challenge
+- Stay genuinely inquisitive and collaborative`;
+    }
+  };
   const callAI = async (systemPrompt: string, messages: APIMessage[], isPhase3: boolean = false): Promise<string> => {
     try {
       const response = await fetch('/api/chat', {
@@ -331,16 +351,12 @@ Note: The AI has access to your full document content. You can also paste additi
       content: `CoLearn session started. Focus question: "${focusQuestion}"`
     }]);
 
-    // Initial system prompt
+    // Initial system prompt with tone modifiers
     const systemPrompt = `**YOUR ROLE: COGNITIVE PARTNER IN LEARNING DIALOGUE**
 
 You are an AI cognitive partner engaging in dialogic learning with a student. Your role is to think WITH the learner through shared dialogue, not deliver structured explanations TO them. Understanding emerges through co-construction, tension, and reflection.
 
-**TONE: BALANCED**
-- Maintain curious, reflective stance
-- Introduce gentle intellectual tension
-- Balance support with thoughtful challenge
-- Stay genuinely inquisitive and collaborative
+${getToneModifiers()}
 
 **TEMPORAL PROGRESSION OF ENGAGEMENT:**
 
@@ -448,16 +464,12 @@ This is exchange 1. Provide a helpful, substantive response that builds understa
 
       conversationHistory.push({ role: 'user', content: currentInputCopy });
 
-      // Enhanced continuing conversation prompt with improved Phase 3
+      // Enhanced continuing conversation prompt with improved Phase 3 and tone modifiers
       const continuingSystemPrompt = `**CONTINUING DIALOGIC LEARNING ENGAGEMENT**
 
 You are maintaining cognitive partnership with this learner through shared dialogue. Understanding emerges through co-construction, tension, and reflection.
 
-**TONE: BALANCED**
-- Maintain curious, reflective stance
-- Introduce gentle intellectual tension
-- Balance support with thoughtful challenge
-- Stay genuinely inquisitive and collaborative
+${getToneModifiers()}
 
 **CURRENT STAGE - Exchange ${newExchangeCount}:**
 
@@ -840,6 +852,7 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
     setSessionDuration(null);
     setReflectionInput('');
     setUsedReflectionPrompts([]);
+    setToneDial('balanced');
   };
 
   // Main component return - all screens with global modals
@@ -880,6 +893,14 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
                     Upload Document
                   </label>
                   <span className="text-gray-500 text-sm">or paste your material below</span>
+                
+                <div className="px-3 py-1 rounded-md text-xs font-medium mt-2 bg-blue-50 text-blue-700 border border-blue-200 inline-block">
+                  <div className="flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                    </svg>
+                    <span>Active AI Dialogue Tone: <span className="capitalize font-semibold">{toneDial}</span></span>
+                  </div>
                 </div>
                 
                 {uploadedFileName && (
@@ -888,7 +909,41 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
                       <FileText className="w-4 h-4 text-green-600" />
                       <span className="text-green-800 text-sm font-medium">{uploadedFileName}</span>
                     </div>
-                    <button
+                    <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                <svg className="inline w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                </svg>
+                AI Dialogue Tone
+              </label>
+              <div className="flex gap-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tone"
+                    value="balanced"
+                    checked={toneDial === 'balanced'}
+                    onChange={(e) => setToneDial(e.target.value as 'balanced' | 'provocative')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Balanced</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="tone"
+                    value="provocative"
+                    checked={toneDial === 'provocative'}
+                    onChange={(e) => setToneDial(e.target.value as 'balanced' | 'provocative')}
+                    className="mr-2"
+                  />
+                  <span className="text-sm text-gray-700">Provocative</span>
+                </label>
+              </div>
+              <p className="text-sm text-gray-500 mt-1">
+                Choose how the AI should engage: balanced (curious and thoughtful) or provocative (challenging and direct)
+              </p>
+            </div>
                       onClick={removeFile}
                       className="text-green-600 hover:text-green-800 text-sm underline"
                     >
@@ -921,6 +976,8 @@ CRITICAL: Must include 2-3 short dialogue quotes. Reference how contributions ev
               <p className="text-sm text-gray-500 mt-1">
                 Examples: "How does this theory apply to real situations?" • "What are the main arguments and do I agree?" • "How does this connect to what I already know?"
               </p>
+            </div>
+
             </div>
 
             <button
